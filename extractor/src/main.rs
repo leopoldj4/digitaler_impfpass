@@ -11,17 +11,17 @@ struct ApiDoc;
 
 #[derive(Deserialize, Serialize, ToSchema)]
 struct ExtractionResponse {
-    first_name: String,
-    last_name: String,
-    birth_date: String,
-    birth_place: String,
-    vaccinations: Vec<Vaccination>,
+    first_name: Option<String>,
+    last_name: Option<String>,
+    birth_date: Option<String>,
+    birth_place: Option<String>,
+    vaccinations: Option<Vec<Vaccination>>,
 }
 
 #[derive(Deserialize, Serialize, ToSchema)]
 struct Vaccination {
-    date: String,
-    name: String,
+    date: Option<String>,
+    name: Option<String>,
 }
 
 #[derive(ToSchema)]
@@ -69,11 +69,11 @@ async fn hello() -> impl Responder {
 #[post("/extract")]
 async fn extract_image(_image: web::Bytes) -> impl Responder {
     HttpResponse::Ok().json(ExtractionResponse {
-        first_name: String::new(),
-        last_name: String::new(),
-        birth_date: String::new(),
-        birth_place: String::new(),
-        vaccinations: Vec::new(),
+        first_name: None,
+        last_name: None,
+        birth_date: None,
+        birth_place: None,
+        vaccinations: None,
     })
 }
 
