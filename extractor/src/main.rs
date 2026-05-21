@@ -73,6 +73,8 @@ impl LlamaCppConfig {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    let bind_addr = env::var("BIND_ADDR").unwrap_or_else(|_| "127.0.0.1:8080".to_string());
+
     HttpServer::new(|| {
         App::new()
             .app_data(web::PayloadConfig::new(MAX_IMAGE_UPLOAD_BYTES))
@@ -80,7 +82,7 @@ async fn main() -> std::io::Result<()> {
             .service(extract_image)
             .service(openapi_spec)
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(bind_addr)?
     .run()
     .await
 }
