@@ -12,10 +12,23 @@ export interface Vaccination {
   is_verified: boolean;
   verified_at: string | null;
   verified_by: string | null;
+  digital_signature_hash: string | null;
+  digital_signature_payload: Record<string, unknown> | null;
+  digital_signed_at: string | null;
+  digital_signed_by: string | null;
   confidence_score: number | null;
   needs_review: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface SignVaccinationsResponse {
+  signed_count: number;
+  signature_hash: string;
+  signed_at: string;
+  signed_by: string;
+  vaccination_ids: number[];
+  message: string;
 }
 
 export interface VaccinationUpdate {

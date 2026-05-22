@@ -1,6 +1,8 @@
 """Business-Logik für Impfeintrag-Bearbeitung und Verifikation."""
 
 from datetime import datetime, timezone
+from hashlib import sha256
+import json
 
 from sqlalchemy.orm import Session
 
@@ -88,3 +90,68 @@ def verify_vaccination(
     ))
 
     return vaccination
+
+
+def sign_vaccinations(
+    db: Session,
+    vaccination_ids: list[int],
+    performed_by: str,
+    signer_id: str,
+    signer_email: str,
+) -> tuple[list[Vaccination], str, datetime]:
+    """Signiert mehrere Impfungen und speichert einen prüfbaren Hash-Nachweis."""
+    unique_ids = list(dict.fromkeys(vaccination_ids))
+    vaccinations = (
+        db.query(Vaccination)
+        .filter(Vaccination.id.in_(unique_ids))
+        .order_by(Vaccination.id)
+        .all()
+    )
+    if len(vaccinations) != len(unique_ids):
+        return [], "", datetime.now(timezone.utc)
+
+    now = datetime.now(timezone.utc)
+    signature_payload = {
+        "signed_at": now.isoformat(),
+        "signed_by": performed_by,
+        "signer_id": signer_id,
+        "signer_email": signer_email,
+        "vaccinations": [
+            {
+                "id": vaccination.id,
+                "patient_id": vaccination.patient_id,
+                "vaccine_name": vaccination.vaccine_name,
+                "batch_number": vaccination.batch_number,
+                "vaccination_date": vaccination.vaccination_date.isoformat()
+                if vaccination.vaccination_date
+                else None,
+                "valid_until": vaccination.valid_until.isoformat()
+                if vaccination.valid_until
+                else None,
+            }
+            for vaccination in vaccinations
+        ],
+    }
+    encoded_payload = json.dumps(signature_payload, sort_keys=True, separators=(",", ":"))
+    signature_hash = sha256(encoded_payload.encode("utf-8")).hexdigest()
+
+    for vaccination in vaccinations:
+        vaccination.is_verified = True
+        vaccination.verified_at = now
+        vaccination.verified_by = performed_by
+        vaccination.needs_review = False
+        vaccination.digital_signature_hash = signature_hash
+        vaccination.digital_signature_payload = signature_payload
+        vaccination.digital_signed_at = now
+        vaccination.digital_signed_by = performed_by
+
+        db.add(AuditLog(
+            patient_id=vaccination.patient_id,
+            action="SIGN",
+            field_changed="digital_signature_hash",
+            old_value=None,
+            new_value=signature_hash,
+            performed_by=performed_by,
+        ))
+
+    return vaccinations, signature_hash, now
