@@ -3,8 +3,14 @@ set -e
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 
+if command -v docker-compose >/dev/null 2>&1; then
+  DOCKER_COMPOSE="docker-compose"
+else
+  DOCKER_COMPOSE="docker compose"
+fi
+
 echo "==> 1/4 PostgreSQL starten..."
-docker-compose -f "$ROOT/docker-compose.yml" up -d postgres
+$DOCKER_COMPOSE -f "$ROOT/docker-compose.yml" up -d postgres
 echo "    Warte auf Datenbankbereitschaft..."
 until docker exec impfpass_db pg_isready -U impfpass -q; do sleep 1; done
 
