@@ -77,7 +77,7 @@ export function PatientDetailClient({ patientId, initialData }: PatientDetailCli
           </TabsList>
 
           <TabsContent value="vaccinations">
-            <ImpfungenTab vaccinations={patient.vaccinations} patientId={patientId} />
+            <ImpfungenTab vaccinations={patient.vaccinations} patientId={patientId} birthDate={patient.birth_date} />
           </TabsContent>
 
           <TabsContent value="stammdaten">
