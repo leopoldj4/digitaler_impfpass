@@ -1,11 +1,16 @@
 import { useRef, useState } from "react";
-import { Upload, Loader2, Camera } from "lucide-react";
+import { Loader2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { VaccinationDocument } from "@/types/document";
 
+interface UploadResponse {
+  documents: VaccinationDocument[];
+  extracted_count: number;
+}
+
 interface Props {
   patientId: number;
-  onUploaded: (docs: VaccinationDocument[]) => void;
+  onUploaded: (docs: VaccinationDocument[], extractedCount: number) => void;
 }
 
 export default function DocumentUpload({ patientId, onUploaded }: Props) {
@@ -28,8 +33,8 @@ export default function DocumentUpload({ patientId, onUploaded }: Props) {
         const d = await res.json().catch(() => ({}));
         throw new Error(d?.detail ?? `Fehler ${res.status}`);
       }
-      const docs: VaccinationDocument[] = await res.json();
-      onUploaded(docs);
+      const data: UploadResponse = await res.json();
+      onUploaded(data.documents, data.extracted_count);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload fehlgeschlagen");
     } finally {

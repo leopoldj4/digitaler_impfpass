@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCheck, Calendar, Syringe, AlertTriangle, ShieldCheck, Info } from "lucide-react";
+import { CheckCheck, Calendar, Syringe, AlertTriangle, ShieldCheck, Info, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +40,7 @@ function StatCard({ icon: Icon, label, value, color = "text-foreground" }: {
 export default function Dashboard() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [signOpen, setSignOpen] = useState(false);
+  const [extractedNotice, setExtractedNotice] = useState<number | null>(null);
   const queryClient = useQueryClient();
 
   const { data: patient, isLoading, isError } = useQuery({
@@ -53,12 +54,18 @@ export default function Dashboard() {
     queryClient.invalidateQueries({ queryKey: ["patients"] });
   }
 
-  // Optimistisches Hinzufügen neuer Dokumente ohne vollen Re-Fetch
-  function handleUploaded(newDocs: VaccinationDocument[]) {
+  function handleUploaded(newDocs: VaccinationDocument[], extractedCount: number) {
+    // Dokumente optimistisch einfügen für sofortiges Feedback
     queryClient.setQueryData<PatientDetail>(["patient", selectedId], (old) => {
       if (!old) return old;
       return { ...old, documents: [...old.documents, ...newDocs] };
     });
+    // Wenn Extractor Impfungen gefunden hat → vollständig neu laden
+    if (extractedCount > 0) {
+      invalidate();
+      setExtractedNotice(extractedCount);
+      setTimeout(() => setExtractedNotice(null), 5000);
+    }
   }
 
   const verifiedCount = patient?.vaccinations.filter((v) => v.is_verified).length ?? 0;
@@ -127,6 +134,16 @@ export default function Dashboard() {
                 </Button>
               </div>
             </div>
+
+            {/* ── Extraktions-Hinweis (temporär nach Upload) ── */}
+            {extractedNotice !== null && (
+              <div className="flex items-center gap-3 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+                <Sparkles className="h-4 w-4 flex-shrink-0 text-blue-600" />
+                <p className="text-sm font-medium text-blue-800">
+                  {extractedNotice} Impfeintrag{extractedNotice !== 1 ? "e" : ""} automatisch aus dem Scan extrahiert – bitte prüfen.
+                </p>
+              </div>
+            )}
 
             {/* ── Review-Banner ── */}
             {showReviewBanner && (
