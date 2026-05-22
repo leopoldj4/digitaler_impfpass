@@ -5,6 +5,7 @@ import {
   MOCK_PATIENTS,
   MOCK_PATIENT_DETAIL,
 } from "./mock-data";
+import { ACCESS_TOKEN_COOKIE, getBrowserAccessToken } from "./auth";
 
 const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
 const SERVER_BASE =
@@ -12,10 +13,33 @@ const SERVER_BASE =
     ? `${process.env.API_BASE_URL ?? "http://localhost:8000"}/api/v1`
     : "/api/v1";
 
+async function getServerAccessToken() {
+  if (typeof window !== "undefined") return null;
+  const { cookies } = await import("next/headers");
+  return (await cookies()).get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+}
+
+async function authHeaders(init?: RequestInit) {
+  const headers = new Headers(init?.headers);
+  const token =
+    typeof window === "undefined"
+      ? await getServerAccessToken()
+      : getBrowserAccessToken();
+
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  return headers;
+}
+
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${SERVER_BASE}${path}`, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
     ...init,
+    headers: await authHeaders({
+      ...init,
+      headers: { "Content-Type": "application/json", ...init?.headers },
+    }),
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
@@ -75,6 +99,7 @@ export const api = {
       files.forEach((f) => form.append("files", f));
       const res = await fetch("/api/v1/documents/upload", {
         method: "POST",
+        headers: await authHeaders(),
         body: form,
       });
       if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);

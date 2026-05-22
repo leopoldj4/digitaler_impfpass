@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import {
   LayoutDashboard,
@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { clearAuthSession } from "@/lib/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,7 +45,14 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
+
+  function logout() {
+    clearAuthSession();
+    router.push("/login");
+    router.refresh();
+  }
 
   return (
     <Sidebar collapsible="icon">
@@ -109,7 +117,9 @@ export function AppSidebar() {
                 <Link href="/settings">Einstellungen</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-destructive">Abmelden</DropdownMenuItem>
+              <DropdownMenuItem className="text-destructive" onClick={logout}>
+                Abmelden
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
