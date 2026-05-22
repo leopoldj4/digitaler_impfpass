@@ -60,25 +60,25 @@ export function VaccinationEntry({ vaccination, index, onSave, onDelete }: Vacci
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-xl border border-border bg-card shadow-sm">
       {/* Header */}
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
-        className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40"
+        className="flex w-full min-w-0 items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/40"
       >
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
           {index + 1}
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-2">
-          <span className="truncate text-sm font-semibold">{vaccination.vaccine_name}</span>
+          <span className="min-w-0 truncate text-sm font-semibold">{vaccination.vaccine_name}</span>
           {vaccination.vaccination_date && (
             <span className="shrink-0 text-xs text-muted-foreground">
               {new Date(vaccination.vaccination_date).toLocaleDateString("de")}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <ConfidenceBadge score={vaccination.confidence_score} />
           {vaccination.is_verified ? (
             <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700 text-[10px] dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-400">
@@ -95,28 +95,28 @@ export function VaccinationEntry({ vaccination, index, onSave, onDelete }: Vacci
 
       {/* Expanded content */}
       {expanded && (
-        <form onSubmit={handleSubmit(onSubmit)} className="border-t px-4 pb-4 pt-3 space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="space-y-1.5">
+        <form onSubmit={handleSubmit(onSubmit)} className="min-w-0 space-y-3 border-t px-4 pb-4 pt-3">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+            <div className="min-w-0 space-y-1.5">
               <Label className="text-xs">Impfstoff *</Label>
               <Input {...register("vaccine_name")} className="h-8 text-sm" />
               {errors.vaccine_name && (
                 <p className="text-[10px] text-destructive">{errors.vaccine_name.message}</p>
               )}
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label className="text-xs">Datum</Label>
               <Input type="date" {...register("vaccination_date")} className="h-8 text-sm" />
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label className="text-xs">Chargennummer</Label>
               <Input {...register("batch_number")} className="h-8 text-sm" placeholder="z.B. ABC123" />
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label className="text-xs">Arzt / Stempel</Label>
               <Input {...register("doctor_stamp")} className="h-8 text-sm" placeholder="z.B. Dr. Mueller" />
             </div>
-            <div className="space-y-1.5">
+            <div className="min-w-0 space-y-1.5">
               <Label className="text-xs">Hersteller</Label>
               <Input {...register("manufacturer")} className="h-8 text-sm" placeholder="z.B. BioNTech" />
             </div>

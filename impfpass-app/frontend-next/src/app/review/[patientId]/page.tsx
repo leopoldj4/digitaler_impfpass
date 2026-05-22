@@ -88,14 +88,14 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex min-w-0 flex-1 overflow-hidden">
         <div className="hidden w-1/2 border-r lg:flex lg:flex-col">
           {isLoading ? <div className="flex h-full items-center justify-center"><Skeleton className="h-96 w-3/4 rounded-xl" /></div>
             : <DocumentViewer documents={patient?.documents ?? []} />}
         </div>
-        <div className="flex w-full flex-col lg:w-1/2">
-          <ScrollArea className="flex-1">
-            <div className="space-y-4 p-5">
+        <div className="flex min-w-0 w-full flex-col lg:w-1/2">
+          <ScrollArea className="min-w-0 flex-1">
+            <div className="min-w-0 space-y-4 p-5">
               {patient && (
                 <div className="rounded-xl border bg-muted/30 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Patient</p>
@@ -112,7 +112,7 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
               )}
               {isLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
                 : patient?.vaccinations.map((v, i) => (
-                  <motion.div key={v.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
+                  <motion.div key={v.id} className="min-w-0" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
                     <VaccinationEntry vaccination={v} index={i} onSave={handleSave} />
                   </motion.div>
                 ))}

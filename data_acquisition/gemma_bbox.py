@@ -41,66 +41,6 @@ STEP2_SCHEMA_HINT = {
 }
 
 
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Two-stage Impfpass extraction + ID assignment via llama.cpp + Whoosh.",
-    )
-    parser.add_argument("--image", required=True, help="Input image path")
-    parser.add_argument("--output", default="annotated.png", help="Output image path")
-    parser.add_argument(
-        "--model",
-        default="gemma-4-27b-it",
-        help="Model name served by llama.cpp",
-    )
-    parser.add_argument(
-        "--env-file",
-        default=".env",
-        help="Env file with LLAMA_CPP_BASE_URL and optional LLAMA_CPP_API_KEY",
-    )
-    parser.add_argument(
-        "--base-url",
-        default=None,
-        help="llama.cpp server base URL (overrides env), e.g. http://127.0.0.1:8080",
-    )
-    parser.add_argument(
-        "--db-json",
-        required=True,
-        help="Path to vaccination JSON records (id, name, diseases)",
-    )
-    parser.add_argument(
-        "--whoosh-dir",
-        default=".whoosh_vaccinations",
-        help="Whoosh index directory (rebuilt each run)",
-    )
-    parser.add_argument(
-        "--step1-json",
-        default="step1_vaccinations.json",
-        help="Saved step-1 model JSON output",
-    )
-    parser.add_argument(
-        "--step2-json",
-        default="step2_assignments.json",
-        help="Saved step-2 model JSON output",
-    )
-    parser.add_argument(
-        "--step1-input-json",
-        default=None,
-        help="Load step-1 JSON from file and skip step-1 model call",
-    )
-    parser.add_argument(
-        "--think",
-        default=True,
-        action=argparse.BooleanOptionalAction,
-        help="Enable model thinking/reasoning (--no-think to disable)",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Print prompts/context and stream model thinking/output live",
-    )
-    return parser.parse_args()
-
-
 def infer_mime_type(image_path: Path) -> str:
     mime, _ = mimetypes.guess_type(str(image_path))
     return mime or "image/png"

@@ -11,8 +11,39 @@ async function documentsForPatient(ctx: QueryCtx, patientId: Id<"patients">) {
   return await Promise.all(
     documents.map(async (document) => ({
       ...document,
+      extraction_status: document.extraction_status ?? "skipped",
+      extraction_result: document.extraction_result ?? null,
+      extraction_error: document.extraction_error ?? null,
+      extracted_at: document.extracted_at ?? null,
       url: await ctx.storage.getUrl(document.storage_id),
     }))
+  );
+}
+
+async function hydrateVaccinationNames<
+  T extends {
+    vaccine_name: string;
+  },
+>(ctx: QueryCtx, vaccinations: T[]) {
+  const catalog = await ctx.db.query("vaccines").take(1000);
+
+  return await Promise.all(
+    vaccinations.map(async (vaccination) => {
+      const vaccineName = vaccination.vaccine_name.trim();
+      const numericCatalogId = /^\d+$/.test(vaccineName) ? Number(vaccineName) : null;
+
+      const vaccine =
+        numericCatalogId === null
+          ? catalog.find((entry) => entry.name === vaccineName)
+          : catalog.find((entry) => entry.id === numericCatalogId);
+
+      return vaccine
+        ? {
+            ...vaccination,
+            vaccine_name: vaccine.brand || vaccine.name,
+          }
+        : vaccination;
+    })
   );
 }
 
@@ -81,12 +112,13 @@ export const get = query({
         .take(200),
       documentsForPatient(ctx, args.id),
     ]);
+    const hydratedVaccinations = await hydrateVaccinationNames(ctx, vaccinations);
 
     return {
       ...patient,
-      vaccination_count: vaccinations.length,
-      needs_review_count: vaccinations.filter((vaccination) => vaccination.needs_review).length,
-      vaccinations,
+      vaccination_count: hydratedVaccinations.length,
+      needs_review_count: hydratedVaccinations.filter((vaccination) => vaccination.needs_review).length,
+      vaccinations: hydratedVaccinations,
       documents,
     };
   },

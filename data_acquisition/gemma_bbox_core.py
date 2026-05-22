@@ -1,21 +1,25 @@
-import asyncio
+import argparse
 import base64
 import json
 import mimetypes
 import os
 import re
 import shutil
+import sys
+import asyncio
+import httpx
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
 
-import httpx
 from dotenv import dotenv_values
 from PIL import Image, ImageDraw
 from whoosh import index
 from whoosh.fields import ID, TEXT, Schema
-from whoosh.qparser import MultifieldParser
+from whoosh.qparser import QueryParser
 
-STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (1995, 2011, etc.) angegeben werden! At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {\"error\": \"Image content unrecognizable\"}"""
+STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (19.11.1995, 11.09.2011, etc.) angegeben werden! Die Namen der Impfstoffe sollen ohne Chargennummer angegeben werden. At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
 
 STEP1_SCHEMA_HINT = {
     "vaccinations": [
@@ -23,12 +27,10 @@ STEP1_SCHEMA_HINT = {
             "box_2d": [100, 200, 300, 400],
             "name": "Beispiel Impfstoff",
             "date": "01.01.2024",
-            "diseases": [],
+            "diseases": []
         }
     ]
 }
-
-MIN_FUZZY_NAME_SCORE = 60
 
 
 class Extractor:
@@ -117,11 +119,11 @@ def validate_box_2d(box: Any) -> list[int]:
         raise ValueError(f"Invalid box_2d format: {box}")
     if not all(isinstance(v, int) for v in box):
         raise ValueError(f"box_2d must contain integers: {box}")
-    return box
+    return [x / 1000.0 for x in box]
 
 
 def scale_box_to_image(box_2d: list[int], width: int, height: int) -> tuple[int, int, int, int]:
-    y1, x1, y2, x2 = box_2d
+    y1, x1, y2, x2 = box_2d  # Gemma returns [ymin, xmin, ymax, xmax]
     image_x1 = int(x1 / 1000.0 * width)
     image_y1 = int(y1 / 1000.0 * height)
     image_x2 = int(x2 / 1000.0 * width)
@@ -133,6 +135,7 @@ def scale_box_to_image(box_2d: list[int], width: int, height: int) -> tuple[int,
     image_y2 = max(0, min(height - 1, image_y2))
 
     return image_x1, image_y1, image_x2, image_y2
+
 
 
 def _normalize_diseases_text(value: Any) -> str:
@@ -192,7 +195,7 @@ def rebuild_whoosh_index(records: list[dict[str, str]], whoosh_dir: Path) -> Non
 
 def whoosh_search(whoosh_dir: Path, query: str, limit: int = 5) -> list[dict[str, str]]:
     idx = index.open_dir(str(whoosh_dir))
-    parser = MultifieldParser(["name", "diseases"], schema=idx.schema)
+    parser = QueryParser("name", schema=idx.schema)
     parsed_query = parser.parse(query)
 
     with idx.searcher() as searcher:
@@ -217,6 +220,7 @@ def debug_print(debug: bool, title: str, data: Any) -> None:
         return
 
     def sanitize(obj: Any) -> Any:
+        # Remove large base64 image payloads and keep other data intact
         if isinstance(obj, str):
             if obj.startswith("data:") and ";base64," in obj:
                 try:
@@ -237,6 +241,7 @@ def debug_print(debug: bool, title: str, data: Any) -> None:
         print(safe)
     else:
         print(json.dumps(safe, indent=2, ensure_ascii=False))
+
 
 
 async def call_llama_chat(
@@ -344,8 +349,9 @@ def build_initial_guesses(
     for item in step1_data["vaccinations"]:
         name = str(item.get("name", "")).strip()
         date = str(item.get("date", "")).strip()
-        diseases = ensure_string_list(item.get("diseases", []))
-        candidates = whoosh_search(whoosh_dir, name, limit=limit) if name else []
+        diseases = [str(d).strip() for d in item.get("diseases", []) if str(d).strip()]
+        search_query = _clean_query(name)
+        candidates = whoosh_search(whoosh_dir, search_query, limit=limit) if search_query else []
         guesses.append(
             {
                 "name": name,
@@ -401,10 +407,38 @@ async def query_step1(
     return parse_step1_response(message)
 
 
+MIN_FUZZY_NAME_SCORE = 30
+
+_QUERY_NOISE_WORDS = frozenset({
+    "impfung", "impfstoff", "vaccination", "vaccine", "vaccin",
+    "gegen", "immunisierung", "schutzimpfung",
+})
+
+def _clean_query(name: str) -> str:
+    """Remove generic vaccination terms from a detected vaccine name.
+
+    Splits on both spaces and hyphens so 'FSME-Impfung' → 'FSME'.
+    Falls back to the original string if all tokens were noise words."""
+    tokens = [t for t in re.split(r"[\s\-]+", name) if t and t.lower() not in _QUERY_NOISE_WORDS]
+    return " ".join(tokens) or name
+
+
+
 def _disease_coverage(candidate: dict[str, str], detected: list[str]) -> int:
     candidate_diseases = candidate["diseases"].lower()
     return sum(1 for d in detected if d.lower() in candidate_diseases)
 
+
+_EXACT_TOKEN_BONUS = 40  # added per query token found verbatim in the candidate name
+
+
+def _exact_token_bonus(query: str, candidate_name: str) -> float:
+    # Split on all non-alphanumeric characters (spaces, hyphens, slashes, …) so
+    # "FSME-Immun" and "FSME Immun" both produce {"fsme", "immun"}.
+    query_tokens = {t for t in re.split(r"\W+", query.lower()) if t}
+    name_tokens = {t for t in re.split(r"\W+", candidate_name.lower()) if t}
+    matched = len(query_tokens & name_tokens)
+    return matched * _EXACT_TOKEN_BONUS
 
 def _fuzzy_search(
     records: list[dict[str, str]],
@@ -412,17 +446,19 @@ def _fuzzy_search(
     limit: int = 5,
     detected_diseases: list[str] | None = None,
 ) -> list[dict[str, str]]:
+    """Gate logic:
+    - With detected diseases: name score >= MIN_FUZZY_NAME_SCORE AND disease overlap > 0.
+    - Without detected diseases: name score >= MIN_FUZZY_NAME_SCORE only.
+    Candidates failing their gate are rejected. Survivors are ranked by fuzzy name
+    score plus a bonus for each query token that appears verbatim in the candidate name."""
     q = query.lower()
     try:
         from rapidfuzz import fuzz
-
         def _name_score(rec: dict[str, str]) -> float:
             return float(fuzz.token_set_ratio(q, rec["name"].lower()))
-
     except ImportError:
         import difflib
-
-        def _name_score(rec: dict[str, str]) -> float:
+        def _name_score(rec: dict[str, str]) -> float:  # type: ignore[misc]
             return difflib.SequenceMatcher(None, q, rec["name"].lower()).ratio() * 100
 
     accepted: list[tuple[dict[str, str], float]] = []
@@ -434,7 +470,8 @@ def _fuzzy_search(
         else:
             passes = name_ok
         if passes:
-            accepted.append((rec, ns))
+            bonus = _exact_token_bonus(query, rec["name"])
+            accepted.append((rec, ns + bonus))
 
     accepted.sort(key=lambda x: x[1], reverse=True)
     return [rec for rec, _ in accepted[:limit]]
@@ -447,37 +484,37 @@ def assign_from_guesses(
 ) -> dict[str, Any]:
     vaccinations = []
     for guess in guesses:
-        date = str(guess.get("date", ""))
+        date = guess.get("date", "")
         candidates = guess.get("candidates", [])
-        name = str(guess.get("name", ""))
-        diseases = ensure_string_list(guess.get("diseases", []))
+        name = guess.get("name", "")
+        diseases = guess.get("diseases", [])
 
+        # Apply disease gate to Whoosh results: when diseases are known, only keep
+        # candidates that cover at least one of them.
+        if candidates and diseases:
+            candidates = [c for c in candidates if _disease_coverage(c, diseases) > 0]
+            debug_print(debug, f"step2 whoosh after disease gate for '{name}'", candidates)
+
+        # Fuzzy fallback when Whoosh returned nothing or all were filtered out.
         if not candidates and name:
-            candidates = _fuzzy_search(records, name, detected_diseases=diseases or None)
+            candidates = _fuzzy_search(records, _clean_query(name), detected_diseases=diseases or None)
             debug_print(debug, f"step2 fuzzy fallback for '{name}'", candidates)
 
-        if candidates and diseases:
-            candidates = sorted(
-                candidates,
-                key=lambda c: _disease_coverage(c, diseases),
-                reverse=True,
-            )
+        # Among surviving candidates, prefer highest disease coverage.
+        if len(candidates) > 1 and diseases:
+            candidates = sorted(candidates, key=lambda c: _disease_coverage(c, diseases), reverse=True)
             debug_print(debug, f"step2 disease-reranked for '{name}'", candidates)
 
-        entry: dict[str, Any] = {
-            "id": str(candidates[0]["id"]) if candidates else "unbekannt",
-            "date": date,
-            "diseases": diseases,
-        }
+        entry: dict[str, Any] = {"id": str(candidates[0]["id"]) if candidates else "unbekannt", "date": date}
+        if diseases:
+            entry["diseases"] = diseases
         vaccinations.append(entry)
 
     return {"vaccinations": vaccinations}
 
 
-def draw_boxes(image_path: Path, output_path: Path, step1_data: dict[str, Any]) -> None:
-    if "vaccinations" not in step1_data:
-        return
 
+def draw_boxes(image_path: Path, output_path: Path, step1_data: dict[str, Any]) -> None:
     with Image.open(image_path).convert("RGB") as image:
         width, height = image.size
         draw = ImageDraw.Draw(image)
