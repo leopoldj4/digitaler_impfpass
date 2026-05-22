@@ -1,35 +1,4 @@
 #!/usr/bin/env python3
-
-"""
-Extracts vaccination data from images of vaccination passports using a two-stage
-vision model pipeline (llama.cpp) and matches the results against a known vaccine
-database via full-text search.
-
-Usage:
-    python gemma_bbox.py --image <path> --db-json <path> [options]
-
-Required:
-    --image PATH        Path to the vaccination passport image (JPEG, PNG, ...)
-    --db-json PATH      JSON file with known vaccine records (list of {id, name, diseases})
-
-Common options:
-    --output PATH           Where to write the annotated output image (default: annotated.png)
-    --model NAME            Model name as served by llama.cpp (default: gemma-4-27b-it)
-    --base-url URL          llama.cpp server URL, e.g. http://127.0.0.1:8080
-                            Can also be set via LLAMA_CPP_BASE_URL in the env file.
-    --env-file PATH         Env file for LLAMA_CPP_BASE_URL / LLAMA_CPP_API_KEY (default: .env)
-    --step1-input-json PATH Skip the model call and load step-1 output from a file instead
-    --debug                 Print prompts and raw model output for troubleshooting
-
-Output files (written next to the run):
-    annotated.png               Input image with bounding boxes drawn on (--output)
-    step1_vaccinations.json     Raw detections from step 1 (--step1-json)
-    step2_assignments.json      Vaccine ID assignments from step 2 (--step2-json)
-
-Example:
-    python gemma_bbox.py --image scan.jpg --db-json vaccines.json --base-url http://localhost:8080
-"""
-
 import argparse
 import base64
 import json
@@ -49,7 +18,7 @@ from whoosh import index
 from whoosh.fields import ID, TEXT, Schema
 from whoosh.qparser import MultifieldParser
 
-STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (1995, 2011, etc.) angegeben werden!"""
+STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (1995, 2011, etc.) angegeben werden! At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
 
 STEP1_SCHEMA_HINT = {
     "vaccinations": [
@@ -57,6 +26,7 @@ STEP1_SCHEMA_HINT = {
             "box_2d": [100, 200, 300, 400],
             "name": "Beispiel Impfstoff",
             "date": "01.01.2024",
+            "diseases": []
         }
     ]
 }
@@ -355,11 +325,13 @@ def build_initial_guesses(
     for item in step1_data["vaccinations"]:
         name = str(item.get("name", "")).strip()
         date = str(item.get("date", "")).strip()
+        diseases = [str(d).strip() for d in item.get("diseases", []) if str(d).strip()]
         candidates = whoosh_search(whoosh_dir, name, limit=limit) if name else []
         guesses.append(
             {
                 "name": name,
                 "date": date,
+                "diseases": diseases,
                 "box_2d": item.get("box_2d"),
                 "candidates": candidates,
             }
@@ -429,6 +401,12 @@ def _fuzzy_search(records: list[dict[str, str]], query: str, limit: int = 5) -> 
     return [rec for rec, score in scored[:limit] if score > 0]
 
 
+def _disease_coverage(candidate: dict[str, str], detected: list[str]) -> int:
+    """Count how many detected diseases appear in the candidate's diseases string."""
+    candidate_diseases = candidate["diseases"].lower()
+    return sum(1 for d in detected if d.lower() in candidate_diseases)
+
+
 def assign_from_guesses(
     guesses: list[dict[str, Any]],
     records: list[dict[str, str]],
@@ -439,10 +417,21 @@ def assign_from_guesses(
         date = guess.get("date", "")
         candidates = guess.get("candidates", [])
         name = guess.get("name", "")
+        diseases = guess.get("diseases", [])
 
         if not candidates and name:
             candidates = _fuzzy_search(records, name)
             debug_print(debug, f"step2 fuzzy fallback for '{name}'", candidates)
+
+        if candidates and diseases:
+            # Re-rank by how many detected diseases the candidate covers.
+            # stable sort preserves Whoosh relevance order among ties.
+            candidates = sorted(
+                candidates,
+                key=lambda c: _disease_coverage(c, diseases),
+                reverse=True,
+            )
+            debug_print(debug, f"step2 disease-reranked for '{name}'", candidates)
 
         if candidates:
             top = candidates[0]
