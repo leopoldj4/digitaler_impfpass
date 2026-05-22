@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import type { Vaccination, VaccinationUpdate } from "@/types/vaccination";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 const schema = z.object({
   vaccine_name: z.string().min(1, "Pflichtfeld"),
@@ -27,8 +28,8 @@ type FormValues = z.infer<typeof schema>;
 interface VaccinationEntryProps {
   vaccination: Vaccination;
   index: number;
-  onSave: (id: number, data: VaccinationUpdate) => Promise<void>;
-  onDelete?: (id: number) => void;
+  onSave: (id: Id<"vaccinations">, data: VaccinationUpdate) => Promise<void>;
+  onDelete?: (id: Id<"vaccinations">) => void;
 }
 
 export function VaccinationEntry({ vaccination, index, onSave, onDelete }: VaccinationEntryProps) {

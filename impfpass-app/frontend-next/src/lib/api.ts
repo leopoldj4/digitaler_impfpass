@@ -1,6 +1,7 @@
 export { api } from "./api-client";
 
 import { api } from "./api-client";
+import type { Id } from "../../convex/_generated/dataModel";
 import type { PatientListItem, PatientDetail } from "@/types/patient";
 import type { SignVaccinationsResponse, Vaccination, VaccinationUpdate } from "@/types/vaccination";
 import type { UploadResponse } from "@/types/document";
@@ -8,26 +9,25 @@ import type { UploadResponse } from "@/types/document";
 export const fetchPatients = (search?: string): Promise<PatientListItem[]> =>
   api.patients.list(search);
 
-export const fetchPatient = (id: number): Promise<PatientDetail> =>
+export const fetchPatient = (id: Id<"patients">): Promise<PatientDetail> =>
   api.patients.get(id);
 
 export const updateVaccination = (
-  id: number,
+  id: Id<"vaccinations">,
   data: VaccinationUpdate,
   performedBy: string,
 ): Promise<Vaccination> => api.vaccinations.update(id, data, performedBy);
 
-export const verifyVaccination = (id: number, performedBy: string): Promise<unknown> =>
+export const verifyVaccination = (id: Id<"vaccinations">, performedBy: string): Promise<unknown> =>
   api.vaccinations.verify(id, performedBy);
 
 export const signVaccinations = (
-  vaccinationIds: number[],
-  password: string,
+  vaccinationIds: Id<"vaccinations">[],
 ): Promise<SignVaccinationsResponse> =>
-  api.vaccinations.sign(vaccinationIds, password);
+  api.vaccinations.sign(vaccinationIds);
 
 export const uploadDocuments = (
-  patientId: number,
+  patientId: Id<"patients">,
   files: File[],
 ): Promise<UploadResponse> =>
   api.documents.upload(patientId, files) as Promise<UploadResponse>;

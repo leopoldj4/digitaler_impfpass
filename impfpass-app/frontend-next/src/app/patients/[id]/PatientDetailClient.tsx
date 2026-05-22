@@ -15,9 +15,10 @@ import { SignaturenTab } from "@/components/patient-detail/SignaturenTab";
 import { SignatureSheet } from "@/components/patient-detail/SignatureSheet";
 import { usePatient } from "@/hooks/usePatient";
 import type { PatientDetail } from "@/types/patient";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface PatientDetailClientProps {
-  patientId: number;
+  patientId: Id<"patients">;
   initialData?: PatientDetail;
 }
 

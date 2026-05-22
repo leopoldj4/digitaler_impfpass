@@ -1,8 +1,9 @@
+import type { Id } from "../../convex/_generated/dataModel";
 import type { VaccinationDocument } from "./document";
 import type { Vaccination } from "./vaccination";
 
 export interface PatientListItem {
-  id: number;
+  id: Id<"patients">;
   first_name: string;
   last_name: string;
   birth_date: string;

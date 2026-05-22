@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import { Upload, FileImage, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useDocumentUpload } from "@/hooks/useDocumentUpload";
+import type { Id } from "../../../convex/_generated/dataModel";
 
-export function DocumentUploadZone({ patientId }: { patientId: number }) {
+export function DocumentUploadZone({ patientId }: { patientId: Id<"patients"> }) {
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { mutate, isPending } = useDocumentUpload(patientId);

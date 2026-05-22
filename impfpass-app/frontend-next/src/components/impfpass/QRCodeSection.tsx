@@ -5,9 +5,10 @@ import { QRCodeSVG } from "qrcode.react";
 import { Copy, Check } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface QRCodeSectionProps {
-  patientId: number;
+  patientId: Id<"patients">;
 }
 
 export function QRCodeSection({ patientId }: QRCodeSectionProps) {

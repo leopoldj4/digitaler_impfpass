@@ -2,10 +2,11 @@
 
 import { DocumentUploadZone, DocumentCard } from "./DocumentUploadZone";
 import type { VaccinationDocument } from "@/types/document";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface DokumenteTabProps {
   documents: VaccinationDocument[];
-  patientId: number;
+  patientId: Id<"patients">;
 }
 
 export function DokumenteTab({ documents, patientId }: DokumenteTabProps) {

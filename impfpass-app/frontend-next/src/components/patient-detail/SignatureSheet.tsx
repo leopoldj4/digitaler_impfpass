@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useVaccinationSign } from "@/hooks/useVaccinationMutations";
 import type { Vaccination } from "@/types/vaccination";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 type Step = "ready" | "signing" | "done" | "error";
 
@@ -22,7 +23,7 @@ interface SignatureSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   vaccinations: Vaccination[];
-  patientId: number;
+  patientId: Id<"patients">;
 }
 
 const variants = {

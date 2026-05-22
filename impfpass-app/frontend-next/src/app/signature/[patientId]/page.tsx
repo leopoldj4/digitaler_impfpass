@@ -4,10 +4,9 @@ import { use, useState } from "react";
 import Link from "next/link";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, CheckCircle2, Shield, KeyRound, Syringe } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Shield, Syringe } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,45 +14,64 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { fetchPatient, signVaccinations } from "@/lib/api";
-import { useRouter } from "next/navigation";
+import type { PatientDetail } from "@/types/patient";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
-type Step = "review" | "consent" | "password" | "success";
+type Step = "review" | "consent" | "success";
 
 export default function SignaturePage({ params }: { params: Promise<{ patientId: string }> }) {
-  const { patientId } = use(params);
-  const router = useRouter();
+  const { patientId: patientIdParam } = use(params);
+  const patientId = patientIdParam as Id<"patients">;
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("review");
   const [consent, setConsent] = useState(false);
-  const [password, setPassword] = useState("");
-  const [passwordError, setPasswordError] = useState("");
   const [signing, setSigning] = useState(false);
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient", patientId],
-    queryFn: () => fetchPatient(Number(patientId)),
+    queryFn: () => fetchPatient(patientId),
   });
 
   const unverified = patient?.vaccinations.filter((v) => !v.is_verified) ?? [];
 
-  const handlePasswordSubmit = async () => {
-    if (!password.trim()) {
-      setPasswordError("Bitte geben Sie Ihr Arzt-Passwort ein.");
-      return;
-    }
-    setPasswordError("");
+  const handleSign = async () => {
     setSigning(true);
     try {
-      await signVaccinations(unverified.map((v) => v.id), password);
-      await queryClient.invalidateQueries({ queryKey: ["patient", patientId] });
+      const vaccinationIds = unverified.map((v) => v.id);
+      const response = await signVaccinations(vaccinationIds);
+      queryClient.setQueryData<PatientDetail>(["patient", patientId], (current) => {
+        if (!current) return current;
+
+        return {
+          ...current,
+          needs_review_count: current.vaccinations.filter(
+            (vaccination) => !vaccinationIds.includes(vaccination.id) && vaccination.needs_review
+          ).length,
+          vaccinations: current.vaccinations.map((vaccination) =>
+            vaccinationIds.includes(vaccination.id)
+              ? {
+                  ...vaccination,
+                  is_verified: true,
+                  verified_at: response.signed_at,
+                  verified_by: response.signed_by,
+                  digital_signature_hash: response.signature_hash,
+                  digital_signature_payload: { mock: true },
+                  digital_signed_at: response.signed_at,
+                  digital_signed_by: response.signed_by,
+                  needs_review: false,
+                }
+              : vaccination
+          ),
+        };
+      });
       setStep("success");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Signatur fehlgeschlagen");
     } finally { setSigning(false); }
   };
 
-  const stepIndex = { review: 0, consent: 1, password: 2, success: 3 };
-  const stepConfig = [{ key: "review", label: "Prüfung" }, { key: "consent", label: "Zustimmung" }, { key: "password", label: "Passwort" }] as const;
+  const stepIndex = { review: 0, consent: 1, success: 2 };
+  const stepConfig = [{ key: "review", label: "Prüfung" }, { key: "consent", label: "Zustimmung" }] as const;
 
   return (
     <div className="mx-auto max-w-xl space-y-6 p-6 lg:p-8">
@@ -125,31 +143,9 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setStep("review")}>Zurück</Button>
-                  <Button className="flex-1 gap-2" disabled={!consent} onClick={() => setStep("password")}>
-                    <KeyRound className="h-4 w-4" />Passwort eingeben
+                  <Button className="flex-1 gap-2" disabled={!consent || signing} onClick={handleSign}>
+                    <Shield className="h-4 w-4" />{signing ? "Signiere ..." : "Jetzt signieren"}
                   </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
-        {step === "password" && (
-          <motion.div key="password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
-            <Card>
-              <CardContent className="space-y-5 p-6">
-                <div className="flex flex-col items-center gap-2 text-center">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"><KeyRound className="h-6 w-6 text-primary" /></div>
-                  <p className="text-sm font-semibold">Arzt-Passwort eingeben</p>
-                  <p className="text-xs text-muted-foreground">Verwenden Sie dasselbe Passwort wie beim Login.</p>
-                </div>
-                <div className="space-y-2">
-                  <Input type="password" placeholder="Passwort" value={password} onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }} autoFocus onKeyDown={(e) => e.key === "Enter" && password.length > 0 && handlePasswordSubmit()} />
-                  {passwordError && <p className="text-xs text-destructive text-center">{passwordError}</p>}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" className="flex-1" onClick={() => setStep("consent")}>Zurück</Button>
-                  <Button className="flex-1" disabled={!password.trim() || signing} onClick={handlePasswordSubmit}>{signing ? "Signiere …" : "Jetzt signieren"}</Button>
                 </div>
               </CardContent>
             </Card>
