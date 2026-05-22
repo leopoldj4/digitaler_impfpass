@@ -1,0 +1,1701 @@
+[
+  {
+    "id": 1,
+    "name": "Synflorix",
+    "brand": "Synflorix",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 2,
+    "name": "Ixchiq",
+    "brand": "Ixchiq",
+    "diseases": [
+      "Chikungunya"
+    ]
+  },
+  {
+    "id": 3,
+    "name": "Pandemic influenza vaccine H5N1 AstraZeneca (previously Pandemic influenza vaccine H5N1 Medimmune)",
+    "brand": "Pandemic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 4,
+    "name": "Ixiaro",
+    "brand": "Ixiaro",
+    "diseases": [
+      "Japanische Enzephalitis"
+    ]
+  },
+  {
+    "id": 5,
+    "name": "Bimervax",
+    "brand": "Bimervax",
+    "diseases": [
+      "COVID-19"
+    ]
+  },
+  {
+    "id": 6,
+    "name": "Mvabea",
+    "brand": "Mvabea",
+    "diseases": [
+      "Ebola"
+    ]
+  },
+  {
+    "id": 7,
+    "name": "Zabdeno",
+    "brand": "Zabdeno",
+    "diseases": [
+      "Ebola"
+    ]
+  },
+  {
+    "id": 8,
+    "name": "Comirnaty",
+    "brand": "Comirnaty",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 9,
+    "name": "mCombriax",
+    "brand": "mCombriax",
+    "diseases": [
+      "COVID-19",
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 10,
+    "name": "Spikevax (previously COVID-19 Vaccine Moderna)",
+    "brand": "Spikevax",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 11,
+    "name": "Rotarix",
+    "brand": "Rotarix",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 12,
+    "name": "Supemtek",
+    "brand": "Supemtek",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 13,
+    "name": "Vaxelis",
+    "brand": "Vaxelis",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 14,
+    "name": "Flucelvax",
+    "brand": "Flucelvax",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 15,
+    "name": "MenQuadfi",
+    "brand": "MenQuadfi",
+    "diseases": [
+      "Meningokokken ACWY"
+    ]
+  },
+  {
+    "id": 16,
+    "name": "Shingrix",
+    "brand": "Shingrix",
+    "diseases": [
+      "Herpes Zoster (Gürtelrose) – adjuvantiert"
+    ]
+  },
+  {
+    "id": 17,
+    "name": "VacPertagen",
+    "brand": "VacPertagen",
+    "diseases": [
+      "Pertussis (Keuchhusten)"
+    ]
+  },
+  {
+    "id": 18,
+    "name": "mNexspike",
+    "brand": "mNexspike",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 19,
+    "name": "Fluad Tetra",
+    "brand": "Fluad",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 20,
+    "name": "Infanrix Hexa",
+    "brand": "Infanrix",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 21,
+    "name": "Prevenar 13",
+    "brand": "Prevenar",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 22,
+    "name": "Qdenga",
+    "brand": "Qdenga",
+    "diseases": [
+      "Dengue"
+    ]
+  },
+  {
+    "id": 23,
+    "name": "Heplisav B",
+    "brand": "Heplisav",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 24,
+    "name": "Aflunov",
+    "brand": "Aflunov",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 25,
+    "name": "Ervebo",
+    "brand": "Ervebo",
+    "diseases": [
+      "Ebola"
+    ]
+  },
+  {
+    "id": 26,
+    "name": "RotaTeq",
+    "brand": "RotaTeq",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 27,
+    "name": "Adjupanrix (previously Pandemic influenza vaccine (H5N1) (split virion, inactivated, adjuvanted) GlaxoSmithKline Biologicals)",
+    "brand": "Adjupanrix",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 28,
+    "name": "Dengvaxia",
+    "brand": "Dengvaxia",
+    "diseases": [
+      "Dengue"
+    ]
+  },
+  {
+    "id": 29,
+    "name": "Incellipan",
+    "brand": "Incellipan",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 30,
+    "name": "Prevenar 20 (previously Apexxnar)",
+    "brand": "Prevenar",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 31,
+    "name": "HBVaxPro",
+    "brand": "HBVaxPro",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 32,
+    "name": "M-M-RVaxPro",
+    "brand": "M-M-RVaxPro",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 33,
+    "name": "Gardasil",
+    "brand": "Gardasil",
+    "diseases": [
+      "HPV (Typen 6,11,16,18)"
+    ]
+  },
+  {
+    "id": 34,
+    "name": "Capvaxive",
+    "brand": "Capvaxive",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 35,
+    "name": "Hexyon",
+    "brand": "Hexyon",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 36,
+    "name": "Hexacima",
+    "brand": "Hexacima",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 37,
+    "name": "ProQuad",
+    "brand": "ProQuad",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln",
+      "Varizellen (Windpocken)"
+    ]
+  },
+  {
+    "id": 38,
+    "name": "Vaxchora",
+    "brand": "Vaxchora",
+    "diseases": [
+      "Cholera"
+    ]
+  },
+  {
+    "id": 39,
+    "name": "Jcovden (previously COVID-19 Vaccine Janssen)",
+    "brand": "Jcovden",
+    "diseases": [
+      "COVID-19 (Vektor)"
+    ]
+  },
+  {
+    "id": 40,
+    "name": "Supemtek Tetra (previously Supemtek)",
+    "brand": "Supemtek",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 41,
+    "name": "Fluenz",
+    "brand": "Fluenz",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 42,
+    "name": "Zoonotic Influenza Vaccine Seqirus",
+    "brand": "Zoonotic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 43,
+    "name": "Nimenrix",
+    "brand": "Nimenrix",
+    "diseases": [
+      "Meningokokken ACWY"
+    ]
+  },
+  {
+    "id": 44,
+    "name": "Penbraya",
+    "brand": "Penbraya",
+    "diseases": [
+      "Meningokokken ABCWY"
+    ]
+  },
+  {
+    "id": 45,
+    "name": "Celldemic",
+    "brand": "Celldemic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 46,
+    "name": "Skycovion",
+    "brand": "Skycovion",
+    "diseases": [
+      "COVID-19"
+    ]
+  },
+  {
+    "id": 47,
+    "name": "PreHevbri",
+    "brand": "PreHevbri",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 48,
+    "name": "Cervarix",
+    "brand": "Cervarix",
+    "diseases": [
+      "HPV (Typen 16,18)"
+    ]
+  },
+  {
+    "id": 49,
+    "name": "Vaxzevria (previously COVID-19 Vaccine AstraZeneca)",
+    "brand": "Vaxzevria",
+    "diseases": [
+      "COVID-19 (Vektor)"
+    ]
+  },
+  {
+    "id": 50,
+    "name": "VidPrevtyn Beta",
+    "brand": "VidPrevtyn",
+    "diseases": [
+      "COVID-19 (Protein)"
+    ]
+  },
+  {
+    "id": 51,
+    "name": "Ambirix",
+    "brand": "Ambirix",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 52,
+    "name": "Twinrix Adult",
+    "brand": "Twinrix",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 53,
+    "name": "Twinrix Paediatric",
+    "brand": "Twinrix",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 54,
+    "name": "COVID-19 Vaccine (inactivated, adjuvanted) Valneva",
+    "brand": "COVID-19",
+    "diseases": [
+      "COVID-19"
+    ]
+  },
+  {
+    "id": 55,
+    "name": "Pandemic Influenza Vaccine H5N1 Baxter AG",
+    "brand": "Pandemic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 56,
+    "name": "Fendrix",
+    "brand": "Fendrix",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 57,
+    "name": "Dukoral",
+    "brand": "Dukoral",
+    "diseases": [
+      "Cholera"
+    ]
+  },
+  {
+    "id": 58,
+    "name": "CureVac’s COVID-19 vaccine (CVnCoV)",
+    "brand": "CureVac’s",
+    "diseases": [
+      "COVID-19"
+    ]
+  },
+  {
+    "id": 59,
+    "name": "Prepandrix",
+    "brand": "Prepandrix",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 60,
+    "name": "Silgard",
+    "brand": "Silgard",
+    "diseases": [
+      "HPV (Typen 6,11,16,18)"
+    ]
+  },
+  {
+    "id": 61,
+    "name": "Intanza",
+    "brand": "Intanza",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 62,
+    "name": "IDflu",
+    "brand": "IDflu",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 63,
+    "name": "Prevenar",
+    "brand": "Prevenar",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 64,
+    "name": "Optaflu",
+    "brand": "Optaflu",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 65,
+    "name": "Celvapan",
+    "brand": "Celvapan",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 66,
+    "name": "Prepandemic influenza vaccine (H5N1) (surface antigen, inactivated, adjuvanted) Novartis Vaccines and Diagnostics",
+    "brand": "Prepandemic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 67,
+    "name": "Pumarix",
+    "brand": "Pumarix",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 68,
+    "name": "Tritanrix HepB",
+    "brand": "Tritanrix",
+    "diseases": [
+      "Diphtherie",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 69,
+    "name": "Infanrix Penta",
+    "brand": "Infanrix",
+    "diseases": [
+      "Kombinationsimpfstoff"
+    ]
+  },
+  {
+    "id": 70,
+    "name": "Daronrix",
+    "brand": "Daronrix",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 71,
+    "name": "Hexavac",
+    "brand": "Hexavac",
+    "diseases": [
+      "Kombinationsimpfstoff"
+    ]
+  },
+  {
+    "id": 72,
+    "name": "Prepandemic Influenza Vaccine (H5N1) (Split Virion, Inactivated, Adjuvanted) GlaxoSmithKline Biologicals",
+    "brand": "Prepandemic",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 73,
+    "name": "Humenza",
+    "brand": "Humenza",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 74,
+    "name": "Rotashield",
+    "brand": "Rotashield",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 75,
+    "name": "Procomvax",
+    "brand": "Procomvax",
+    "diseases": [
+      "Kombinationsimpfstoff"
+    ]
+  },
+  {
+    "id": 76,
+    "name": "Quintanrix",
+    "brand": "Quintanrix",
+    "diseases": [
+      "Hepatitis A",
+      "Typhus"
+    ]
+  },
+  {
+    "id": 77,
+    "name": "Infanrix HepB",
+    "brand": "Infanrix",
+    "diseases": [
+      "Kombinationsimpfstoff"
+    ]
+  },
+  {
+    "id": 78,
+    "name": "Hepacare",
+    "brand": "Hepacare",
+    "diseases": [
+      "Hepatitis"
+    ]
+  },
+  {
+    "id": 79,
+    "name": "Triacelluvax",
+    "brand": "Triacelluvax",
+    "diseases": [
+      "Pertussis (Keuchhusten)"
+    ]
+  },
+  {
+    "id": 80,
+    "name": "Primavax",
+    "brand": "Primavax",
+    "diseases": [
+      "Kombinationsimpfstoff"
+    ]
+  },
+  {
+    "id": 81,
+    "name": "Abrysvo® Pulver und Lösungsmittel zur Herstellung einer Injektionslösung",
+    "brand": "Abrysvo",
+    "diseases": [
+      "RSV (Respiratorisches Syncytial-Virus)"
+    ]
+  },
+  {
+    "id": 82,
+    "name": "Afluria Tetra - Injektionssuspension in einer Fertigspritze, 2023/2024",
+    "brand": "Afluria-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 83,
+    "name": "Apexxnar axicorp Injektionssuspension in einer Fertigspritze",
+    "brand": "Apexxnar",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 84,
+    "name": "Arexvy Eurim Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Arexvy",
+    "diseases": [
+      "RSV (Respiratorisches Syncytial-Virus)"
+    ]
+  },
+  {
+    "id": 85,
+    "name": "AVAXIM® Injektionssuspension in einer Fertigspritze",
+    "brand": "AVAXIM",
+    "diseases": [
+      "Hepatitis A"
+    ]
+  },
+  {
+    "id": 86,
+    "name": "Bexsero Abacus Injektionssuspension in einer Fertigspritze",
+    "brand": "Bexsero",
+    "diseases": [
+      "Meningokokken B"
+    ]
+  },
+  {
+    "id": 87,
+    "name": "BioThrax, Injektionssuspension",
+    "brand": "BioThrax",
+    "diseases": [
+      "Milzbrand (Anthrax)"
+    ]
+  },
+  {
+    "id": 88,
+    "name": "Booster-Gynatren® Injektionssuspension",
+    "brand": "Booster-Gynatren",
+    "diseases": [
+      "Lactobacillus Stämme, Kombinationen"
+    ]
+  },
+  {
+    "id": 89,
+    "name": "Booster-StroVac® Injektionssuspension",
+    "brand": "Booster-StroVac",
+    "diseases": [
+      "Enterobacteriaceae Stämme, Kombinationen"
+    ]
+  },
+  {
+    "id": 90,
+    "name": "Boostrix CC Pharma Injektionssuspension in einer Fertigspritze",
+    "brand": "Boostrix",
+    "diseases": [
+      "Pertussis (Keuchhusten)"
+    ]
+  },
+  {
+    "id": 91,
+    "name": "Boostrix Polio Abacus Injektionssuspension in einer Fertigspritze",
+    "brand": "Boostrix-Polio",
+    "diseases": [
+      "Diphtherie",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 92,
+    "name": "Capvaxive Emra Injektionslösung in einer Fertigspritze",
+    "brand": "Capvaxive",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 93,
+    "name": "Cervarix Abacus Injektionssuspension in einer Fertigspritze",
+    "brand": "Cervarix",
+    "diseases": [
+      "HPV (Typen 16,18)"
+    ]
+  },
+  {
+    "id": 94,
+    "name": "Cervarix Gerke Injektionssuspension in einer Fertigspritze",
+    "brand": "Cervarix-Gerke",
+    "diseases": [
+      "HPV (Typen 16,18)"
+    ]
+  },
+  {
+    "id": 95,
+    "name": "Cervarix Haemato Pharm Injektionssuspension in einer Fertigspritze",
+    "brand": "Cervarix-Haemato-Pharm",
+    "diseases": [
+      "HPV (Typen 16,18)"
+    ]
+  },
+  {
+    "id": 96,
+    "name": "Comirnaty JN.1 3 Mikrogramm/Dosis Konzentrat zur Herstellung einer Injektionsdispersion COVID-19-mRNA-Impfstoff, MDV CON OEGD",
+    "brand": "Comirnaty-JN",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 97,
+    "name": "Comirnaty KP.2 3 Mikrogramm/Dosis Konzentrat zur Herstellung einer Injektionsdispersion MDV CON BUND",
+    "brand": "Comirnaty-KP",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 98,
+    "name": "Comirnaty LP.8.1 3 Mikrogramm/Dosis Konzentrat zur Herstellung einer Injektionsdispersion MDV CON BUND",
+    "brand": "Comirnaty-LP",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 99,
+    "name": "Comirnaty Omicron XBB.1.5 3 Mikrogramm/Dosis Konzentrat zur Herstellung einer Injektionsdispersion MDV CON BUND",
+    "brand": "Comirnaty-Omicron-XBB",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 100,
+    "name": "Covaxis, Injektionssuspension in einer Fertigspritze",
+    "brand": "Covaxis",
+    "diseases": [
+      "Pertussis (Keuchhusten)"
+    ]
+  },
+  {
+    "id": 101,
+    "name": "Dukoral CC Pharma Suspension und Brausepulver zur Herstellung einer Suspension zum Einnehmen",
+    "brand": "Dukoral",
+    "diseases": [
+      "Cholera"
+    ]
+  },
+  {
+    "id": 102,
+    "name": "Efluelda 2025/2026 Injektionssuspension in einer Fertigspritze",
+    "brand": "Efluelda",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 103,
+    "name": "Efluelda Tetra Injektionssuspension in einer Fertigspritze, 2023/2024",
+    "brand": "Efluelda-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 104,
+    "name": "Encepur Erwachsene ACA Injektionssuspension in einer Fertigspritze",
+    "brand": "Encepur-Erwachsene",
+    "diseases": [
+      "FSME (Frühsommer-Meningoenzephalitis)"
+    ]
+  },
+  {
+    "id": 105,
+    "name": "Encepur Kinder ACA Injektionssuspension in einer Fertigspritze",
+    "brand": "Encepur-Kinder",
+    "diseases": [
+      "FSME (Frühsommer-Meningoenzephalitis)"
+    ]
+  },
+  {
+    "id": 106,
+    "name": "Engerix-B Erwachsene Aaragon Injektionssuspension in einer Fertigspritze",
+    "brand": "Engerix-B-Erwachsene-Aaragon",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 107,
+    "name": "Engerix-B Erwachsene BB Farma Injektionssuspension in einer Fertigspritze",
+    "brand": "Engerix-B-Erwachsene-BB-Farma",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 108,
+    "name": "Engerix-B Erwachsene Fd Pharma Injektionssuspension in einer Fertigspritze",
+    "brand": "Engerix-B-Erwachsene",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 109,
+    "name": "Engerix-B Erwachsene, Haemato Pharm Injektionssuspension in einer Fertigspritze",
+    "brand": "Engerix-B-Erwachsene-Haemato-Pharm",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 110,
+    "name": "Engerix-B Kinder, axicorp Injektionssuspension in einer Fertigspritze",
+    "brand": "Engerix-B-Kinder",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 111,
+    "name": "Fendrix CC Pharma Injektionssuspension",
+    "brand": "Fendrix",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 112,
+    "name": "Fluad Injektionssuspension in einer Fertigspritze, 2025/2026",
+    "brand": "Fluad",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 113,
+    "name": "Fluad® Tetra, Injektionssuspension in einer Fertigspritze 2023/2024",
+    "brand": "Fluad-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 114,
+    "name": "Flucelvax Injektionssuspension in einer Fertigspritze, 2025/2026",
+    "brand": "Flucelvax",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 115,
+    "name": "Flucelvax® Tetra, Injektionssuspension in einer Fertigspritze 2023/2024",
+    "brand": "Flucelvax-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 116,
+    "name": "Fluenz® Nasenspray, Suspension",
+    "brand": "Fluenz-Nasenspray",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 117,
+    "name": "FSME-Immun 0,25 ml Junior kohlpharma Suspension zur Injektion in einer Fertigspritze",
+    "brand": "FSME-Immun",
+    "diseases": [
+      "FSME (Frühsommer-Meningoenzephalitis)"
+    ]
+  },
+  {
+    "id": 118,
+    "name": "FSME-Immun Erwachsene Emra Suspension zur Injektion in einer Fertigspritze",
+    "brand": "FSME-Immun-Erwachsene",
+    "diseases": [
+      "FSME (Frühsommer-Meningoenzephalitis)"
+    ]
+  },
+  {
+    "id": 119,
+    "name": "Gardasil 9 2care4 Injektionssuspension in einer Fertigspritze",
+    "brand": "Gardasil",
+    "diseases": [
+      "HPV (9-valent)"
+    ]
+  },
+  {
+    "id": 120,
+    "name": "Gynatren® Injektionssuspension",
+    "brand": "Gynatren",
+    "diseases": [
+      "Lactobacillus Stämme, Kombinationen"
+    ]
+  },
+  {
+    "id": 121,
+    "name": "Havrix 720 Kinder Aaragon Injektionssuspension",
+    "brand": "Havrix",
+    "diseases": [
+      "Hepatitis A"
+    ]
+  },
+  {
+    "id": 122,
+    "name": "HBVaxPro 5 Mikrogramm Eurim Injektionssuspension in einer Fertigspritze",
+    "brand": "HBVaxPro",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 123,
+    "name": "HEPLISAV B 20 Mikrogramm Injektionslösung in einer Fertigspritze",
+    "brand": "HEPLISAV-B",
+    "diseases": [
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 124,
+    "name": "Hexyon 1 4U Pharma Injektionssuspension in einer Fertigspritze",
+    "brand": "Hexyon",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 125,
+    "name": "Hexyon BB Farma Injektionssuspension in einer Fertigspritze",
+    "brand": "Hexyon-BB-Farma",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 126,
+    "name": "Hexyon Gerke Injektionssuspension in einer Fertigspritze mit Kanüle",
+    "brand": "Hexyon-Gerke",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 127,
+    "name": "Hexyon Haemato-Pharm Injektionssuspension in einer Fertigspritze mit Kanüle",
+    "brand": "Hexyon-Haemato-Pharm",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 128,
+    "name": "Imovax Polio kohlpharma Injektionssuspension in einer Fertigspritze",
+    "brand": "Imovax-Polio",
+    "diseases": [
+      "Poliomyelitis (Kinderlähmung)"
+    ]
+  },
+  {
+    "id": 129,
+    "name": "IMVANEX Injektionssuspension",
+    "brand": "IMVANEX",
+    "diseases": [
+      "Mpox",
+      "Pocken"
+    ]
+  },
+  {
+    "id": 130,
+    "name": "Infanrix hexa Abacus Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Infanrix-hexa",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 131,
+    "name": "Infanrix Injektionssuspension in einer Fertigspritze",
+    "brand": "Infanrix",
+    "diseases": [
+      "Pertussis (Keuchhusten)"
+    ]
+  },
+  {
+    "id": 132,
+    "name": "Infanrix-IPV+Hib CC Pharma Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Infanrix-IPV-Hib",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 133,
+    "name": "Influsplit 2025/2026 Injektionssuspension in einer Fertigspritze",
+    "brand": "Influsplit",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 134,
+    "name": "Influsplit Tetra 2023/2024, Injektionssuspension in einer Fertigspritze",
+    "brand": "Influsplit-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 135,
+    "name": "Influvac Saison 2025/2026 Injektionssuspension in einer Fertigspritze",
+    "brand": "Influvac-Saison",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 136,
+    "name": "Influvac Tetra Saison 2023/2024 Injektionssuspension in einer Fertigspritze",
+    "brand": "Influvac-Tetra-Saison",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 137,
+    "name": "IPV Mérieux® Injektionssupension in einer Fertigspritze",
+    "brand": "IPV-M-rieux-Injektionssupension",
+    "diseases": [
+      "Poliomyelitis (Kinderlähmung)"
+    ]
+  },
+  {
+    "id": 138,
+    "name": "IXCHIQ Pulver und Lösungsmittel zur Herstellung einer Injektionslösung",
+    "brand": "IXCHIQ",
+    "diseases": [
+      "Chikungunya"
+    ]
+  },
+  {
+    "id": 139,
+    "name": "Ixiaro CC Pharma Injektionssuspension",
+    "brand": "Ixiaro",
+    "diseases": [
+      "Japanische Enzephalitis"
+    ]
+  },
+  {
+    "id": 140,
+    "name": "M-M-RVax Pro 101 Carefarm Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "M-M-RVax-Pro",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 141,
+    "name": "M-M-Rvax Pro Gerke Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "M-M-Rvax-Pro-Gerke",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 142,
+    "name": "M-M-RvaxPRO 2care4 Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "M-M-RvaxPRO",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 143,
+    "name": "Menjugate 10 Mikrogramm Abacus Injektionssuspension, Fertigspritze",
+    "brand": "Menjugate",
+    "diseases": [
+      "Meningokokken C"
+    ]
+  },
+  {
+    "id": 144,
+    "name": "MenQuadfi® Injektionslösung",
+    "brand": "MenQuadfi",
+    "diseases": [
+      "Meningokokken ACWY"
+    ]
+  },
+  {
+    "id": 145,
+    "name": "Menveo Eurim Pulver und Lösung zur Herstellung einer Injektionslösung",
+    "brand": "Menveo",
+    "diseases": [
+      "Meningokokken ACWY"
+    ]
+  },
+  {
+    "id": 146,
+    "name": "mRESVIA Injektionsdispersion in einer Fertigspritze",
+    "brand": "mRESVIA-Injektionsdispersion",
+    "diseases": [
+      "RSV (Respiratorisches Syncytial-Virus)"
+    ]
+  },
+  {
+    "id": 147,
+    "name": "NeisVac-C®, 0,5 ml, Suspension zur Injektion in einer Fertigspritze",
+    "brand": "NeisVac-C",
+    "diseases": [
+      "Meningokokken C"
+    ]
+  },
+  {
+    "id": 148,
+    "name": "Nimenrix axicorp B.V. Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Nimenrix",
+    "diseases": [
+      "Meningokokken ACWY"
+    ]
+  },
+  {
+    "id": 149,
+    "name": "Nuvaxovid JN.1 Injektionsdispersion in einer Fertigspritze BUND",
+    "brand": "Nuvaxovid-JN",
+    "diseases": [
+      "COVID-19 (Protein)"
+    ]
+  },
+  {
+    "id": 150,
+    "name": "Nuvaxovid XBB.1.5 Injektionsdispersion COVID-19-Impfstoff (rekombinant, adjuvantiert) 5DV BUND",
+    "brand": "Nuvaxovid-XBB",
+    "diseases": [
+      "COVID-19 (Protein)"
+    ]
+  },
+  {
+    "id": 151,
+    "name": "Pentavac kohlpharma Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Pentavac",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 152,
+    "name": "Pneumovax 23 1 4U Pharma Injektionslösung in einer Fertigspritze",
+    "brand": "Pneumovax",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 153,
+    "name": "Prevenar 13 101 Carefarm Injektionssuspension",
+    "brand": "Prevenar",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 154,
+    "name": "Priorix Aaragon Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Priorix-Aaragon",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 155,
+    "name": "Priorix Abacus Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Priorix",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 156,
+    "name": "Priorix BB Farma Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Priorix-BB-Farma",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln"
+    ]
+  },
+  {
+    "id": 157,
+    "name": "Priorix-Tetra - Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Priorix-Tetra",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln",
+      "Varizellen (Windpocken)"
+    ]
+  },
+  {
+    "id": 158,
+    "name": "ProQuad axicorp Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "ProQuad",
+    "diseases": [
+      "Masern",
+      "Mumps",
+      "Röteln",
+      "Varizellen (Windpocken)"
+    ]
+  },
+  {
+    "id": 159,
+    "name": "Qdenga Emra Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Qdenga",
+    "diseases": [
+      "Dengue"
+    ]
+  },
+  {
+    "id": 160,
+    "name": "Rabipur kohlpharma Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Rabipur",
+    "diseases": [
+      "Tollwut"
+    ]
+  },
+  {
+    "id": 161,
+    "name": "Repevax®, Injektionssuspension in einer Fertigspritze",
+    "brand": "Repevax",
+    "diseases": [
+      "Diphtherie",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 162,
+    "name": "Revaxis axicorp Injektionssuspension in einer Fertigspritze",
+    "brand": "Revaxis",
+    "diseases": [
+      "Diphtherie",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 163,
+    "name": "Rotarix 1 4U Pharma Suspension zum Einnehmen in einer Tube zum Ausdrücken",
+    "brand": "Rotarix",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 164,
+    "name": "Rotarix BB Farma Suspension zum Einnehmen in einem Fertigapplikator für die orale Verabreichung",
+    "brand": "Rotarix-BB-Farma",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 165,
+    "name": "RotaTeq Abacus Lösung zum Einnehmen",
+    "brand": "RotaTeq",
+    "diseases": [
+      "Rotavirus-Gastroenteritis"
+    ]
+  },
+  {
+    "id": 166,
+    "name": "Shingrix 101 Carefarm Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Shingrix",
+    "diseases": [
+      "Herpes Zoster (Gürtelrose) – adjuvantiert"
+    ]
+  },
+  {
+    "id": 167,
+    "name": "Shingrix Medicopharm Pulver und Suspension zur Herstellung einer Injektionssuspension",
+    "brand": "Shingrix-Medicopharm",
+    "diseases": [
+      "Herpes Zoster (Gürtelrose) – adjuvantiert"
+    ]
+  },
+  {
+    "id": 168,
+    "name": "Spikevax JN.1 50 Mikrogramm Injektionsdispersion in einer Fertigspritze",
+    "brand": "Spikevax-JN",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 169,
+    "name": "Spikevax LP.8.1 50 Mikrogramm Injektionsdispersion in einer Fertigspritze",
+    "brand": "Spikevax-LP",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 170,
+    "name": "Spikevax XBB.1.5 50 Mikrogramm Injektionsdispersion",
+    "brand": "Spikevax-XBB",
+    "diseases": [
+      "COVID-19 (mRNA)"
+    ]
+  },
+  {
+    "id": 171,
+    "name": "Stamaril CC Pharma Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "Stamaril",
+    "diseases": [
+      "Gelbfieber"
+    ]
+  },
+  {
+    "id": 172,
+    "name": "StroVac®, Injektionssuspension",
+    "brand": "StroVac",
+    "diseases": [
+      "Enterobacteriaceae Stämme, Kombinationen"
+    ]
+  },
+  {
+    "id": 173,
+    "name": "Synflorix Eurim Injektionssuspension in einer Fertigspritze",
+    "brand": "Synflorix",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 174,
+    "name": "Td-IMMUN Injektionssuspension Einzeldosis-Fertigspritze",
+    "brand": "Td-IMMUN",
+    "diseases": [
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 175,
+    "name": "Td-pur®, Injektionssuspension in Fertigspritze",
+    "brand": "Td-pur",
+    "diseases": [
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 176,
+    "name": "Tollwut-Impfstoff (HDC) inaktiviert mind. 2,5 I.E./ml, Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension",
+    "brand": "Tollwut-Impfstoff-HDC-inaktiviert-mind",
+    "diseases": [
+      "Tollwut"
+    ]
+  },
+  {
+    "id": 177,
+    "name": "Trumenba axicorp Injektionssuspension in einer Fertigspritze",
+    "brand": "Trumenba",
+    "diseases": [
+      "Meningokokken B"
+    ]
+  },
+  {
+    "id": 178,
+    "name": "Twinrix Erwachsene 101 Carefarm, Injektionssuspension in einer Fertigspritze",
+    "brand": "Twinrix-Erwachsene",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 179,
+    "name": "Twinrix Erwachsene Aaragon Injektionssuspension in einer Fertigspritze",
+    "brand": "Twinrix-Erwachsene-Aaragon",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 180,
+    "name": "Twinrix Erwachsene Gerke, Injektionssuspension in einer Fertigspritze",
+    "brand": "Twinrix-Erwachsene-Gerke",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 181,
+    "name": "Twinrix Kinder axicorp, Injektionssuspension in einer Fertigspritze",
+    "brand": "Twinrix-Kinder",
+    "diseases": [
+      "Hepatitis A",
+      "Hepatitis B"
+    ]
+  },
+  {
+    "id": 182,
+    "name": "Typhim Vi® 25 Mikrogramm, Injektionslösung in einer Fertigspritze",
+    "brand": "Typhim-Vi",
+    "diseases": [
+      "Typhus"
+    ]
+  },
+  {
+    "id": 183,
+    "name": "Typhoral L, magensaftresistente Hartkapseln",
+    "brand": "Typhoral-L-magensaftresistente-Hartkapseln",
+    "diseases": [
+      "Typhus"
+    ]
+  },
+  {
+    "id": 184,
+    "name": "Vaqta 50 E/1 ml ACA Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaqta",
+    "diseases": [
+      "Hepatitis A"
+    ]
+  },
+  {
+    "id": 185,
+    "name": "VAQTA® Kinder 25 E/0,5 ml, Injektionssuspension in einer Fertigspritze",
+    "brand": "VAQTA-Kinder",
+    "diseases": [
+      "Hepatitis A"
+    ]
+  },
+  {
+    "id": 186,
+    "name": "Varilrix Abacus Pulver und Lösungsmittel zur Herstellung einer Injektionslösung in einer Fertigspritze",
+    "brand": "Varilrix",
+    "diseases": [
+      "Varizellen (Windpocken)"
+    ]
+  },
+  {
+    "id": 187,
+    "name": "Varivax ACA Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "Varivax",
+    "diseases": [
+      "Varizellen (Windpocken)"
+    ]
+  },
+  {
+    "id": 188,
+    "name": "Vaxchora® Brausepulver und Pulver zur Herstellung einer Suspension zum Einnehmen",
+    "brand": "Vaxchora-Brausepulver",
+    "diseases": [
+      "Cholera"
+    ]
+  },
+  {
+    "id": 189,
+    "name": "Vaxchora Eurim Brausepulver und Pulver zur Herstellung einer Suspension zum Einnehmen",
+    "brand": "Vaxchora",
+    "diseases": [
+      "Cholera"
+    ]
+  },
+  {
+    "id": 190,
+    "name": "Vaxelis 2care4 Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaxelis",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 191,
+    "name": "Vaxelis BB Farma Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaxelis-BB-Farma",
+    "diseases": [
+      "Diphtherie",
+      "Haemophilus influenzae Typ b (HiB)",
+      "Hepatitis B",
+      "Pertussis (Keuchhusten)",
+      "Poliomyelitis (Kinderlähmung)",
+      "Tetanus (Wundstarrkrampf)"
+    ]
+  },
+  {
+    "id": 192,
+    "name": "Vaxigrip® 2025/2026, Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaxigrip",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 193,
+    "name": "Vaxigrip Tetra 2023/2024, Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaxigrip-Tetra",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 194,
+    "name": "Vaxneuvance axicorp B.V. Injektionssuspension in einer Fertigspritze",
+    "brand": "Vaxneuvance",
+    "diseases": [
+      "Pneumokokken"
+    ]
+  },
+  {
+    "id": 195,
+    "name": "Verorab Emra Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension, Tollwut-Impfstoff, inaktiviert",
+    "brand": "Verorab",
+    "diseases": [
+      "Tollwut"
+    ]
+  },
+  {
+    "id": 196,
+    "name": "VIMKUNYA Injektionssuspension in einer Fertigspritze",
+    "brand": "VIMKUNYA",
+    "diseases": [
+      "Chikungunya"
+    ]
+  },
+  {
+    "id": 197,
+    "name": "Xanaflu Saison 2025/2026 Injektionssuspension in einer Fertigspritze",
+    "brand": "Xanaflu-Saison",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 198,
+    "name": "Xanaflu Tetra Saison 2023/2024, Injektionssuspension in einer Fertigspritze",
+    "brand": "Xanaflu-Tetra-Saison",
+    "diseases": [
+      "Influenza (Grippe)"
+    ]
+  },
+  {
+    "id": 199,
+    "name": "Zostavax kohlpharma Pulver und Lösungsmittel zur Herstellung einer Injektionssuspension in einer Fertigspritze",
+    "brand": "Zostavax",
+    "diseases": [
+      "Herpes Zoster (Gürtelrose) – Lebendimpfstoff"
+    ]
+  }
+]
