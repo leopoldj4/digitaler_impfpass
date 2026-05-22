@@ -1,0 +1,8 @@
+To get all vaccine data, execute the following workflow:
+
+Run scraper.py, it will generate an sqlite database containing all relevant vaccines
+associated with the diseases against which they provide immunization.
+
+Then run extractor.py, this will extract the information from the database into a json
+file which can be used to associate vaccines with diseases when extracting of vaccination 
+data from vaccine passport images.
