@@ -9,6 +9,8 @@
  */
 
 import type * as documents from "../documents.js";
+import type * as patients from "../patients.js";
+import type * as vaccinations from "../vaccinations.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +20,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   documents: typeof documents;
+  patients: typeof patients;
+  vaccinations: typeof vaccinations;
 }>;
 
 /**

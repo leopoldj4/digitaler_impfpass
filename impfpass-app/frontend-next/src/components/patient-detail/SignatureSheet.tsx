@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { ShieldCheck, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
@@ -12,13 +12,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useVaccinationSign } from "@/hooks/useVaccinationMutations";
 import type { Vaccination } from "@/types/vaccination";
 
-type Step = "password" | "signing" | "done" | "error";
+type Step = "ready" | "signing" | "done" | "error";
 
 interface SignatureSheetProps {
   open: boolean;
@@ -34,29 +32,20 @@ const variants = {
 };
 
 export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: SignatureSheetProps) {
-  const [password, setPassword] = useState("");
-  const [step, setStep] = useState<Step>("password");
+  const [step, setStep] = useState<Step>("ready");
   const [errorMsg, setErrorMsg] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
   const { mutateAsync } = useVaccinationSign(patientId);
 
   const unverified = vaccinations.filter((v) => !v.is_verified);
 
   useEffect(() => {
     if (open) {
-      setPassword("");
-      setStep("password");
+      setStep("ready");
       setErrorMsg("");
-      setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
 
   async function handleSign() {
-    if (!password.trim()) {
-      setErrorMsg("Bitte geben Sie Ihr Arzt-Passwort ein.");
-      inputRef.current?.focus();
-      return;
-    }
     if (unverified.length === 0) {
       setErrorMsg("Es gibt keine offenen Einträge zum Signieren.");
       return;
@@ -64,10 +53,7 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
     setStep("signing");
     setErrorMsg("");
     try {
-      const response = await mutateAsync({
-        vaccinationIds: unverified.map((v) => v.id),
-        password,
-      });
+      const response = await mutateAsync(unverified.map((v) => v.id));
       setStep("done");
       toast.success(`${response.signed_count} Impfungen erfolgreich digital signiert`);
       setTimeout(() => onOpenChange(false), 1800);
@@ -116,33 +102,14 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
 
           <div className="flex-1">
             <AnimatePresence mode="wait">
-              {step === "password" && (
-                <motion.div key="password" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="doctor-password">Arzt-Passwort bestätigen</Label>
-                    <Input
-                      id="doctor-password"
-                      ref={inputRef}
-                      type="password"
-                      placeholder="Passwort"
-                      value={password}
-                      onChange={(e) => { setPassword(e.target.value); setErrorMsg(""); }}
-                      onKeyDown={(e) => e.key === "Enter" && password.length > 0 && handleSign()}
-                      className="h-10"
-                    />
-                    {errorMsg ? (
-                      <p className="text-xs text-destructive">{errorMsg}</p>
-                    ) : (
-                      <p className="text-xs text-muted-foreground">
-                        Verwenden Sie dasselbe Passwort wie beim Login.
-                      </p>
-                    )}
-                  </div>
+              {step === "ready" && (
+                <motion.div key="ready" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
+                  {errorMsg && <p className="text-xs text-destructive">{errorMsg}</p>}
                   <div className="flex gap-2">
                     <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
                       Abbrechen
                     </Button>
-                    <Button className="flex-1 gap-1.5" disabled={!password.trim() || unverified.length === 0} onClick={handleSign}>
+                    <Button className="flex-1 gap-1.5" disabled={unverified.length === 0} onClick={handleSign}>
                       <ShieldCheck className="h-4 w-4" />
                       Signieren
                     </Button>
@@ -192,7 +159,7 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
                     <p className="font-medium text-destructive">Fehler aufgetreten</p>
                     <p className="text-sm text-muted-foreground mt-1">{errorMsg}</p>
                   </div>
-                  <Button variant="outline" onClick={() => setStep("password")}>Erneut versuchen</Button>
+                  <Button variant="outline" onClick={() => setStep("ready")}>Erneut versuchen</Button>
                 </motion.div>
               )}
             </AnimatePresence>
