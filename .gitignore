@@ -20,3 +20,5 @@ impfpass-app/backend/uploads/
 
 # macOS
 .DS_Store
+
+.npm-cache
