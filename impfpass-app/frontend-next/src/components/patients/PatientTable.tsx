@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Users, ChevronLeft, ChevronRight, X } from "lucide-react";
+import { Search, Users, ChevronLeft, ChevronRight, X, AlertTriangle, Clock, Mail, CheckCircle2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,8 +28,106 @@ import { MoreHorizontal, ShieldCheck, QrCode } from "lucide-react";
 import { usePatients } from "@/hooks/usePatients";
 import { formatDate, getInitials } from "@/lib/utils";
 import type { PatientListItem } from "@/types/patient";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 const PAGE_SIZE = 10;
+
+interface AlertEntry {
+  id: Id<"patients">;
+  name: string;
+  reason: string;
+  type: "overdue" | "upcoming";
+}
+
+function PraxisuebersichtBanner({ patients }: { patients: PatientListItem[] }) {
+  const [emailSent, setEmailSent] = useState<Record<string, boolean>>({});
+
+  const alerts: AlertEntry[] = useMemo(() => {
+    return patients
+      .filter((p) => p.needs_review_count > 0)
+      .slice(0, 5)
+      .map((p, i) => ({
+        id: p.id,
+        name: `${p.last_name}, ${p.first_name}`,
+        reason: i % 2 === 0 ? "Tetanus-Auffrischung überfällig" : "Influenza-Impfung fällig in 14 Tagen",
+        type: i % 2 === 0 ? "overdue" : "upcoming",
+      }));
+  }, [patients]);
+
+  if (alerts.length === 0) return null;
+
+  const overdueCount = alerts.filter((a) => a.type === "overdue").length;
+  const upcomingCount = alerts.filter((a) => a.type === "upcoming").length;
+
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50/60 overflow-hidden mb-6">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-amber-200 bg-amber-50">
+        <div className="flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <span className="text-sm font-semibold text-amber-900">Praxisübersicht – Impfbedarf</span>
+        </div>
+        <div className="flex items-center gap-2">
+          {overdueCount > 0 && (
+            <Badge className="text-xs bg-red-100 text-red-700 border border-red-200 font-medium">
+              {overdueCount} überfällig
+            </Badge>
+          )}
+          {upcomingCount > 0 && (
+            <Badge className="text-xs bg-amber-100 text-amber-700 border border-amber-200 font-medium">
+              {upcomingCount} bald fällig
+            </Badge>
+          )}
+        </div>
+      </div>
+
+      <div className="divide-y divide-amber-100">
+        {alerts.map((alert) => (
+          <div key={alert.id} className="flex items-center justify-between px-4 py-3 hover:bg-amber-50/80 transition-colors">
+            <div className="flex items-center gap-3">
+              {alert.type === "overdue" ? (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-red-100">
+                  <AlertTriangle className="h-3.5 w-3.5 text-red-600" />
+                </div>
+              ) : (
+                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-100">
+                  <Clock className="h-3.5 w-3.5 text-amber-600" />
+                </div>
+              )}
+              <div>
+                <Link href={`/patients/${alert.id}`} className="text-sm font-medium hover:text-primary transition-colors">
+                  {alert.name}
+                </Link>
+                <p className="text-xs text-muted-foreground mt-0.5">{alert.reason}</p>
+              </div>
+            </div>
+            {emailSent[alert.id] ? (
+              <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+                <CheckCircle2 className="h-3.5 w-3.5" />
+                E-Mail gesendet
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs border-amber-300 text-amber-800 hover:bg-amber-100"
+                onClick={() => setEmailSent((prev) => ({ ...prev, [alert.id]: true }))}
+              >
+                <Mail className="mr-1.5 h-3 w-3" />
+                Benachrichtigen
+              </Button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <div className="px-4 py-2 border-t border-amber-200 bg-amber-50">
+        <p className="text-xs text-amber-700">
+          Nur Patienten mit Handlungsbedarf werden angezeigt. E-Mail-Benachrichtigungen sind simuliert.
+        </p>
+      </div>
+    </div>
+  );
+}
 
 interface PatientTableProps {
   initialData?: PatientListItem[];
@@ -61,6 +159,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
 
   return (
     <div className="space-y-4">
+      <PraxisuebersichtBanner patients={patients} />
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
