@@ -382,29 +382,47 @@ def query_step1(
     return parse_step1_response(message)
 
 
-def _fuzzy_search(records: list[dict[str, str]], query: str, limit: int = 5) -> list[dict[str, str]]:
-    q = query.lower()
-    try:
-        from rapidfuzz import fuzz
-        def _score(rec: dict[str, str]) -> float:
-            name_score = fuzz.token_set_ratio(q, rec["name"].lower())
-            disease_score = fuzz.token_set_ratio(q, rec["diseases"].lower())
-            return max(name_score, disease_score)
-    except ImportError:
-        import difflib
-        def _score(rec: dict[str, str]) -> float:  # type: ignore[misc]
-            name_score = difflib.SequenceMatcher(None, q, rec["name"].lower()).ratio() * 100
-            disease_score = difflib.SequenceMatcher(None, q, rec["diseases"].lower()).ratio() * 100
-            return max(name_score, disease_score)
-    scored = [(rec, _score(rec)) for rec in records]
-    scored.sort(key=lambda x: x[1], reverse=True)
-    return [rec for rec, score in scored[:limit] if score > 0]
+MIN_FUZZY_NAME_SCORE = 60
 
 
 def _disease_coverage(candidate: dict[str, str], detected: list[str]) -> int:
-    """Count how many detected diseases appear in the candidate's diseases string."""
     candidate_diseases = candidate["diseases"].lower()
     return sum(1 for d in detected if d.lower() in candidate_diseases)
+
+
+def _fuzzy_search(
+    records: list[dict[str, str]],
+    query: str,
+    limit: int = 5,
+    detected_diseases: list[str] | None = None,
+) -> list[dict[str, str]]:
+    """Gate logic:
+    - With detected diseases: name score >= MIN_FUZZY_NAME_SCORE AND disease overlap > 0.
+    - Without detected diseases: name score >= MIN_FUZZY_NAME_SCORE only.
+    Candidates failing their gate are rejected entirely."""
+    q = query.lower()
+    try:
+        from rapidfuzz import fuzz
+        def _name_score(rec: dict[str, str]) -> float:
+            return float(fuzz.token_set_ratio(q, rec["name"].lower()))
+    except ImportError:
+        import difflib
+        def _name_score(rec: dict[str, str]) -> float:  # type: ignore[misc]
+            return difflib.SequenceMatcher(None, q, rec["name"].lower()).ratio() * 100
+
+    accepted: list[tuple[dict[str, str], float]] = []
+    for rec in records:
+        ns = _name_score(rec)
+        name_ok = ns >= MIN_FUZZY_NAME_SCORE
+        if detected_diseases:
+            passes = name_ok and _disease_coverage(rec, detected_diseases) > 0
+        else:
+            passes = name_ok
+        if passes:
+            accepted.append((rec, ns))
+
+    accepted.sort(key=lambda x: x[1], reverse=True)
+    return [rec for rec, _ in accepted[:limit]]
 
 
 def assign_from_guesses(
@@ -420,12 +438,11 @@ def assign_from_guesses(
         diseases = guess.get("diseases", [])
 
         if not candidates and name:
-            candidates = _fuzzy_search(records, name)
+            candidates = _fuzzy_search(records, name, detected_diseases=diseases or None)
             debug_print(debug, f"step2 fuzzy fallback for '{name}'", candidates)
 
         if candidates and diseases:
-            # Re-rank by how many detected diseases the candidate covers.
-            # stable sort preserves Whoosh relevance order among ties.
+            # Re-rank by disease coverage; stable sort preserves score order for ties.
             candidates = sorted(
                 candidates,
                 key=lambda c: _disease_coverage(c, diseases),
@@ -433,11 +450,10 @@ def assign_from_guesses(
             )
             debug_print(debug, f"step2 disease-reranked for '{name}'", candidates)
 
-        if candidates:
-            top = candidates[0]
-            vaccinations.append({"id": str(top["id"]), "date": date})
-        else:
-            vaccinations.append({"id": "", "date": date})
+        entry: dict[str, Any] = {"id": str(candidates[0]["id"]) if candidates else "unbekannt", "date": date}
+        if diseases:
+            entry["diseases"] = diseases
+        vaccinations.append(entry)
 
     return {"vaccinations": vaccinations}
 
