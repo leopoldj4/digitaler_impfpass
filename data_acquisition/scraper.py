@@ -118,10 +118,15 @@ ATC_DISEASE_DE: dict[str, list[str]] = {
     "J07AH09": ["Meningokokken B"],
     "J07AH11": ["Meningokokken ABCWY"],
     "J07AJ":   ["Pertussis (Keuchhusten)"],
+    "J07AJ51": ["Diphtherie", "Pertussis (Keuchhusten)", "Tetanus (Wundstarrkrampf)"],
+    "J07AJ52": ["Diphtherie", "Pertussis (Keuchhusten)", "Tetanus (Wundstarrkrampf)"],
     "J07AL":   ["Pneumokokken"],
     "J07AM":   ["Tetanus (Wundstarrkrampf)"],
+    "J07AM51": ["Diphtherie", "Tetanus (Wundstarrkrampf)"],
     "J07AN":   ["Tuberkulose"],
     "J07AP":   ["Typhus"],
+    "J07AX52": ["Rezidivierende Vaginalinfektionen"],
+    "J07AX53": ["Rezidivierende Harnwegsinfektionen"],
     "J07BA":   ["FSME (Frühsommer-Meningoenzephalitis)", "Japanische Enzephalitis"],
     "J07BA01": ["FSME (Frühsommer-Meningoenzephalitis)"],
     "J07BA02": ["Japanische Enzephalitis"],
@@ -174,7 +179,10 @@ ATC_DISEASE_DE: dict[str, list[str]] = {
 PROTECTION_YEARS: dict[str, int | None] = {
     "J07AF":   10,
     "J07AM":   10,
+    "J07AM51": 10,
     "J07AJ":   10,
+    "J07AJ51": 10,
+    "J07AJ52": 10,
     "J07AG":   None,
     "J07AE":   None,
     "J07AH":   None,
@@ -236,6 +244,37 @@ def atc_to_diseases(atc: str) -> list[str]:
         if atc.startswith(key) and len(key) > len(best_key):
             best_key = key
     return list(ATC_DISEASE_DE.get(best_key, []))
+
+
+def _check_atc_completeness(
+    atc_code: str, atc_desc: str, diseases: list[str], product_name: str
+) -> None:
+    """Warnt wenn ein J07-ATC-Code nicht im Dictionary steht oder Krankheitszuordnung unvollständig scheint.
+
+    Fälle:
+      1. J07-Code bekannt aber keine Krankheiten zugeordnet → Eintrag in ATC_DISEASE_DE ergänzen.
+      2. Kombinations-ATC (Beschreibung enthält "kombination") nicht im Dict → Präfix-Fallback
+         liefert zu wenige Krankheiten.
+    """
+    if not atc_code or not atc_code.upper().startswith("J07"):
+        return
+
+    if not diseases:
+        print(
+            f"    [WARN] Keine Krankheiten für {product_name!r} "
+            f"(ATC {atc_code} – {atc_desc or '?'}). "
+            f"Bitte ATC_DISEASE_DE ergänzen."
+        )
+        return
+
+    if atc_code.upper() not in ATC_DISEASE_DE and "kombination" in atc_desc.lower():
+        if len(diseases) < 2:
+            print(
+                f"    [WARN] Unbekannter Kombinations-ATC {atc_code} "
+                f"({atc_desc}) bei {product_name!r} – "
+                f"nur {len(diseases)} Krankheit per Präfix-Fallback. "
+                f"Bitte ATC_DISEASE_DE ergänzen."
+            )
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -363,6 +402,7 @@ def scrape_ema_epar() -> list[VaccineRecord]:
 
         # Krankheiten: ATC hat Vorrang (Deutsch); MeSH nur wenn ATC unbekannt
         diseases = atc_to_diseases(atc)
+        _check_atc_completeness(atc, "", diseases, name)
         if not diseases:
             mesh_raw   = str(row[col.get("Therapeutic area (MeSH)", 8)] or "")
             mesh_terms = [
@@ -502,6 +542,7 @@ def _get_product_details(product_url: str) -> dict | None:
                 active_sub_str = m.group(1).strip()
 
         diseases = atc_to_diseases(atc_code)
+        _check_atc_completeness(atc_code, atc_desc, diseases, full_name or product_url)
         if not diseases and atc_desc:
             diseases = [atc_desc]
 

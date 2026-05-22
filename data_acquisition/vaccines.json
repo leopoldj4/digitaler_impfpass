@@ -733,7 +733,7 @@
     "name": "Booster-Gynatren® Injektionssuspension",
     "brand": "Booster-Gynatren",
     "diseases": [
-      "Lactobacillus Stämme, Kombinationen"
+      "Rezidivierende Vaginalinfektionen"
     ]
   },
   {
@@ -741,7 +741,7 @@
     "name": "Booster-StroVac® Injektionssuspension",
     "brand": "Booster-StroVac",
     "diseases": [
-      "Enterobacteriaceae Stämme, Kombinationen"
+      "Rezidivierende Harnwegsinfektionen"
     ]
   },
   {
@@ -749,7 +749,9 @@
     "name": "Boostrix CC Pharma Injektionssuspension in einer Fertigspritze",
     "brand": "Boostrix",
     "diseases": [
-      "Pertussis (Keuchhusten)"
+      "Diphtherie",
+      "Pertussis (Keuchhusten)",
+      "Tetanus (Wundstarrkrampf)"
     ]
   },
   {
@@ -832,7 +834,9 @@
     "name": "Covaxis, Injektionssuspension in einer Fertigspritze",
     "brand": "Covaxis",
     "diseases": [
-      "Pertussis (Keuchhusten)"
+      "Diphtherie",
+      "Pertussis (Keuchhusten)",
+      "Tetanus (Wundstarrkrampf)"
     ]
   },
   {
@@ -992,7 +996,7 @@
     "name": "Gynatren® Injektionssuspension",
     "brand": "Gynatren",
     "diseases": [
-      "Lactobacillus Stämme, Kombinationen"
+      "Rezidivierende Vaginalinfektionen"
     ]
   },
   {
@@ -1106,7 +1110,9 @@
     "name": "Infanrix Injektionssuspension in einer Fertigspritze",
     "brand": "Infanrix",
     "diseases": [
-      "Pertussis (Keuchhusten)"
+      "Diphtherie",
+      "Pertussis (Keuchhusten)",
+      "Tetanus (Wundstarrkrampf)"
     ]
   },
   {
@@ -1465,7 +1471,7 @@
     "name": "StroVac®, Injektionssuspension",
     "brand": "StroVac",
     "diseases": [
-      "Enterobacteriaceae Stämme, Kombinationen"
+      "Rezidivierende Harnwegsinfektionen"
     ]
   },
   {
@@ -1481,6 +1487,7 @@
     "name": "Td-IMMUN Injektionssuspension Einzeldosis-Fertigspritze",
     "brand": "Td-IMMUN",
     "diseases": [
+      "Diphtherie",
       "Tetanus (Wundstarrkrampf)"
     ]
   },
@@ -1489,6 +1496,7 @@
     "name": "Td-pur®, Injektionssuspension in Fertigspritze",
     "brand": "Td-pur",
     "diseases": [
+      "Diphtherie",
       "Tetanus (Wundstarrkrampf)"
     ]
   },
