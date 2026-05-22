@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, type QueryCtx } from "./_generated/server";
+import { mutation, query, type QueryCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 
 async function documentsForPatient(ctx: QueryCtx, patientId: Id<"patients">) {
@@ -15,6 +15,24 @@ async function documentsForPatient(ctx: QueryCtx, patientId: Id<"patients">) {
     }))
   );
 }
+
+export const create = mutation({
+  args: {
+    first_name: v.string(),
+    last_name: v.string(),
+    birth_date: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = new Date().toISOString();
+    const id = await ctx.db.insert("patients", {
+      first_name: args.first_name,
+      last_name: args.last_name,
+      birth_date: args.birth_date,
+      created_at: now,
+    });
+    return id;
+  },
+});
 
 export const list = query({
   args: {
