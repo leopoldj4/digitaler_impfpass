@@ -12,6 +12,19 @@ export default defineSchema({
     created_at: v.string(),
   }).index("by_last_name", ["last_name"]),
 
+  vaccines: defineTable({
+    id: v.number(),
+    name: v.string(),
+    brand: v.string(),
+    diseases: v.array(v.string()),
+  })
+    .index("by_catalog_id", ["id"])
+    .index("by_brand", ["brand"])
+    .searchIndex("search_name", {
+      searchField: "name",
+      filterFields: ["brand"],
+    }),
+
   vaccinations: defineTable({
     patient_id: v.id("patients"),
     vaccine_name: v.string(),

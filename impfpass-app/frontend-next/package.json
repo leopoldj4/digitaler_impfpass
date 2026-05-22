@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "import": "convex import --table patients samplePatients.jsonl"
+    "import": "convex import --table patients samplePatients.jsonl && convex import --table vaccines vaccinations.jsonl"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
