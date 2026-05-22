@@ -1,108 +1,46 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import {
-  CheckCircle2,
-  Eye,
-  EyeOff,
-  KeyRound,
-  Lock,
-  ShieldCheck,
-  Stethoscope,
-  UserRound,
-} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CheckCircle2, Eye, EyeOff, KeyRound, Lock, ShieldCheck, Stethoscope, UserRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { setAuthSession, type AuthUser } from "@/lib/auth";
 
-interface LoginResponse {
-  challenge_id: string;
-  two_factor_required: boolean;
-  expires_at: string;
-  dev_code?: string | null;
-}
-
-interface TokenResponse {
-  access_token: string;
-  token_type: string;
-  user: AuthUser;
-}
-
-type AuthStep = "password" | "two-factor";
-type Status = { type: "idle" | "loading" | "success" | "error"; message: string };
+type AuthStep = "credentials" | "two-factor";
+type Status = "idle" | "submitting" | "verifying" | "success";
 
 export function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const [step, setStep] = useState<AuthStep>("password");
-  const [challenge, setChallenge] = useState<LoginResponse | null>(null);
-  const [form, setForm] = useState({
-    email: "doctor@example.com",
-    password: "ChangeMe!234",
-    code: "",
-  });
-  const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
+  const [email, setEmail] = useState("doctor@example.com");
+  const [password, setPassword] = useState("ChangeMe!234");
+  const [code, setCode] = useState("123456");
   const [showPassword, setShowPassword] = useState(false);
+  const [step, setStep] = useState<AuthStep>("credentials");
+  const [status, setStatus] = useState<Status>("idle");
 
-  const canSubmitPassword = useMemo(
-    () => Boolean(form.email.trim() && form.password.trim()),
-    [form.email, form.password]
-  );
-  const canSubmitCode = useMemo(() => form.code.trim().length >= 6, [form.code]);
+  const canSubmit = useMemo(() => Boolean(email.trim() && password.trim()), [email, password]);
+  const canVerify = useMemo(() => code.trim().length >= 6, [code]);
 
-  async function submitPassword(event: FormEvent<HTMLFormElement>) {
+  function submitCredentials(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmitPassword) return;
+    if (!canSubmit || status === "submitting") return;
 
-    setStatus({ type: "loading", message: "Zugangsdaten werden geprüft..." });
-    try {
-      const response = await fetch("/api/v1/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: form.email, password: form.password }),
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.detail ?? "Login fehlgeschlagen");
-
-      setChallenge(data);
+    setStatus("submitting");
+    window.setTimeout(() => {
       setStep("two-factor");
-      setForm((current) => ({ ...current, code: data.dev_code ?? "" }));
-      setStatus({
-        type: "success",
-        message: "Zugangsdaten korrekt. Bitte zweiten Faktor bestätigen.",
-      });
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message: error instanceof Error ? error.message : "Login fehlgeschlagen",
-      });
-    }
+      setStatus("idle");
+    }, 350);
   }
 
-  async function submitCode(event: FormEvent<HTMLFormElement>) {
+  function submitCode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!canSubmitCode || !challenge) return;
+    if (!canVerify || status === "verifying") return;
 
-    setStatus({ type: "loading", message: "Code wird geprüft..." });
-    try {
-      const response = await fetch("/api/v1/auth/verify-2fa", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ challenge_id: challenge.challenge_id, code: form.code }),
-      });
-      const data = await response.json() as TokenResponse & { detail?: string };
-      if (!response.ok) throw new Error(data.detail ?? "2FA-Prüfung fehlgeschlagen");
-
-      setAuthSession(data.access_token);
-      router.replace(searchParams.get("next") || "/");
-      router.refresh();
-    } catch (error) {
-      setStatus({
-        type: "error",
-        message: error instanceof Error ? error.message : "2FA-Prüfung fehlgeschlagen",
-      });
-    }
+    setStatus("verifying");
+    window.setTimeout(() => {
+      setStatus("success");
+      window.setTimeout(() => router.replace("/"), 450);
+    }, 500);
   }
 
   return (
@@ -120,15 +58,15 @@ export function LoginPage() {
             Praxiszugang
           </h1>
           <p className="mt-5 text-sm leading-6 text-slate-100 md:text-base">
-            Geschützter Zugriff auf Patienten, Impfpass-Scans und digitale Signaturen.
+            Zugriff auf Patienten, Impfpass-Scans und Signaturabläufe.
           </p>
         </div>
         <div className="relative flex flex-wrap gap-2 text-xs font-medium text-teal-50">
           <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
-            <ShieldCheck className="h-4 w-4" /> 2FA erforderlich
+            <ShieldCheck className="h-4 w-4" /> 2FA Demo
           </span>
           <span className="inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-2">
-            <CheckCircle2 className="h-4 w-4" /> Zugriff geschützt
+            <CheckCircle2 className="h-4 w-4" /> Praxis
           </span>
         </div>
       </section>
@@ -138,25 +76,25 @@ export function LoginPage() {
           <div className="mb-7 flex items-center justify-between">
             <div>
               <p className="mb-2 text-xs font-bold uppercase tracking-normal text-muted-foreground">
-                {step === "password" ? "Anmelden" : "Zweiter Faktor"}
+                {step === "credentials" ? "Anmelden" : "Zweiter Faktor"}
               </p>
               <h2 className="text-2xl font-semibold tracking-tight">
-                {step === "password" ? "Willkommen zurück" : "Zugriff bestätigen"}
+                {step === "credentials" ? "Willkommen zurück" : "Zugriff bestätigen"}
               </h2>
             </div>
             <ShieldCheck className="h-8 w-8 text-teal-700" />
           </div>
 
-          {step === "password" ? (
-            <form className="space-y-4" onSubmit={submitPassword}>
+          {step === "credentials" ? (
+            <form className="space-y-4" onSubmit={submitCredentials}>
               <label className="block space-y-1.5">
                 <span className="text-sm font-medium">E-Mail</span>
                 <div className="relative">
                   <UserRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="email"
-                    value={form.email}
-                    onChange={(event) => setForm({ ...form, email: event.target.value })}
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     className="h-10 pl-9"
                     autoComplete="email"
                     required
@@ -170,8 +108,8 @@ export function LoginPage() {
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type={showPassword ? "text" : "password"}
-                    value={form.password}
-                    onChange={(event) => setForm({ ...form, password: event.target.value })}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
                     className="h-10 pl-9 pr-10"
                     autoComplete="current-password"
                     required
@@ -190,10 +128,10 @@ export function LoginPage() {
               <Button
                 type="submit"
                 className="h-10 w-full gap-2"
-                disabled={!canSubmitPassword || status.type === "loading"}
+                disabled={!canSubmit || status === "submitting"}
               >
                 <KeyRound className="h-4 w-4" />
-                Weiter
+                {status === "submitting" ? "Prüfe..." : "Weiter"}
               </Button>
             </form>
           ) : (
@@ -203,50 +141,42 @@ export function LoginPage() {
                 <Input
                   inputMode="numeric"
                   maxLength={6}
-                  value={form.code}
-                  onChange={(event) => setForm({ ...form, code: event.target.value.replace(/\D/g, "") })}
+                  value={code}
+                  onChange={(event) => setCode(event.target.value.replace(/\D/g, ""))}
                   className="h-11 text-center text-lg font-semibold tracking-[0.3em]"
                   autoComplete="one-time-code"
                   required
                 />
               </label>
 
-              {challenge?.dev_code && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-800">
-                  Entwicklungs-Code: <span className="font-mono">{challenge.dev_code}</span>
-                </div>
-              )}
+              <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-800">
+                Demo-Code: <span className="font-mono">123456</span>
+              </div>
 
               <Button
                 type="submit"
                 className="h-10 w-full gap-2"
-                disabled={!canSubmitCode || status.type === "loading"}
+                disabled={!canVerify || status === "verifying"}
               >
-                <CheckCircle2 className="h-4 w-4" />
-                Prüfen und öffnen
+                {status === "success" ? <CheckCircle2 className="h-4 w-4" /> : <ShieldCheck className="h-4 w-4" />}
+                {status === "verifying" ? "Prüfe..." : status === "success" ? "Angemeldet" : "Prüfen und öffnen"}
               </Button>
-              <Button type="button" variant="outline" className="h-10 w-full" onClick={() => setStep("password")}>
+              <Button
+                type="button"
+                variant="outline"
+                className="h-10 w-full"
+                disabled={status === "verifying"}
+                onClick={() => {
+                  setStep("credentials");
+                  setStatus("idle");
+                }}
+              >
                 Zurück
               </Button>
             </form>
-          )}
-
-          {status.message && (
-            <p
-              className={`mt-4 rounded-lg px-3 py-2 text-sm font-medium ${
-                status.type === "error"
-                  ? "bg-red-50 text-red-700"
-                  : status.type === "success"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {status.message}
-            </p>
           )}
         </div>
       </section>
     </main>
   );
 }
-

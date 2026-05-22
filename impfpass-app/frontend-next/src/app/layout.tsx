@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ConvexClientProvider } from "./ConvexClientProvider";
 import { Providers } from "@/components/layout/Providers";
 import { AppShell } from "@/components/layout/AppShell";
 
@@ -23,9 +24,11 @@ export default function RootLayout({
   return (
     <html lang="de" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <body className="h-full">
-        <Providers>
-          <AppShell>{children}</AppShell>
-        </Providers>
+        <ConvexClientProvider>
+          <Providers>
+            <AppShell>{children}</AppShell>
+          </Providers>
+        </ConvexClientProvider>
       </body>
     </html>
   );

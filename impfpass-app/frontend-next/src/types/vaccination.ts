@@ -1,6 +1,8 @@
+import type { Id } from "../../convex/_generated/dataModel";
+
 export interface Vaccination {
-  id: number;
-  patient_id: number;
+  id: Id<"vaccinations">;
+  patient_id: Id<"patients">;
   vaccine_name: string;
   vaccine_type: string | null;
   manufacturer: string | null;
@@ -27,7 +29,7 @@ export interface SignVaccinationsResponse {
   signature_hash: string;
   signed_at: string;
   signed_by: string;
-  vaccination_ids: number[];
+  vaccination_ids: Id<"vaccinations">[];
   message: string;
 }
 

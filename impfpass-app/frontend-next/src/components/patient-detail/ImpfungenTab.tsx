@@ -11,10 +11,11 @@ import {
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { VaccinationRow } from "./VaccinationRow";
 import type { Vaccination } from "@/types/vaccination";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 interface ImpfungenTabProps {
   vaccinations: Vaccination[];
-  patientId: number;
+  patientId: Id<"patients">;
 }
 
 export function ImpfungenTab({ vaccinations, patientId }: ImpfungenTabProps) {

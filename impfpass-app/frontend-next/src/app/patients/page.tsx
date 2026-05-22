@@ -1,15 +1,7 @@
-import { api } from "@/lib/api-client";
 import { PatientTable } from "@/components/patients/PatientTable";
 import { TopBar } from "@/components/layout/TopBar";
 
-export default async function PatientsPage() {
-  let initialData = undefined;
-  try {
-    initialData = await api.patients.list();
-  } catch {
-    // fallback to client-side fetch
-  }
-
+export default function PatientsPage() {
   return (
     <>
       <TopBar crumbs={[{ label: "Patienten" }]} />
@@ -20,7 +12,7 @@ export default async function PatientsPage() {
             Patientenakten verwalten und Impfpässe einsehen.
           </p>
         </div>
-        <PatientTable initialData={initialData} />
+        <PatientTable />
       </main>
     </>
   );

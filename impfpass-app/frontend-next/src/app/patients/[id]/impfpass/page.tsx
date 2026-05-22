@@ -7,7 +7,7 @@ import { ImpfpassCard } from "@/components/impfpass/ImpfpassCard";
 import { QRCodeSection } from "@/components/impfpass/QRCodeSection";
 import { ExportButton } from "@/components/impfpass/ExportButton";
 import { Button } from "@/components/ui/button";
-import { MOCK_PATIENT_DETAIL } from "@/lib/mock-data";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -15,14 +15,8 @@ interface Props {
 
 export default async function ImpfpassPage({ params }: Props) {
   const { id } = await params;
-  const patientId = parseInt(id, 10);
-
-  let patient = MOCK_PATIENT_DETAIL;
-  try {
-    patient = await api.patients.get(patientId);
-  } catch {
-    // use mock
-  }
+  const patientId = id as Id<"patients">;
+  const patient = await api.patients.get(patientId);
 
   return (
     <>

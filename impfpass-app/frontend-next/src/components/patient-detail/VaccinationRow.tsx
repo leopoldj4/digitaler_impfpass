@@ -10,6 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { formatDate, getVaccinationStatus } from "@/lib/utils";
 import type { Vaccination, VaccinationUpdate } from "@/types/vaccination";
 import { useVaccinationUpdate } from "@/hooks/useVaccinationMutations";
+import type { Id } from "../../../convex/_generated/dataModel";
 
 const statusConfig = {
   verified: { label: "Signiert", icon: ShieldCheck, className: "bg-emerald-50 text-emerald-700 border-emerald-200" },
@@ -20,7 +21,7 @@ const statusConfig = {
 
 interface VaccinationRowProps {
   vaccination: Vaccination;
-  patientId: number;
+  patientId: Id<"patients">;
 }
 
 export function VaccinationRow({ vaccination: v, patientId }: VaccinationRowProps) {

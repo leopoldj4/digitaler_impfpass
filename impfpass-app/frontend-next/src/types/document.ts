@@ -1,6 +1,8 @@
+import type { Id } from "../../convex/_generated/dataModel";
+
 export interface VaccinationDocument {
-  id: number;
-  patient_id: number;
+  id: Id<"vaccination_documents">;
+  patient_id: Id<"patients">;
   file_name: string;
   file_path: string;
   file_type: string;

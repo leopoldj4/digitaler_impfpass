@@ -16,11 +16,13 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { fetchPatient, updateVaccination } from "@/lib/api";
 import type { VaccinationUpdate } from "@/types/vaccination";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 const DOCTOR = "Dr. Mueller";
 
 export default function ReviewPage({ params }: { params: Promise<{ patientId: string }> }) {
-  const { patientId } = use(params);
+  const { patientId: patientIdParam } = use(params);
+  const patientId = patientIdParam as Id<"patients">;
   const router = useRouter();
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -28,10 +30,10 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient", patientId],
-    queryFn: () => fetchPatient(Number(patientId)),
+    queryFn: () => fetchPatient(patientId),
   });
 
-  const handleSave = async (id: number, data: VaccinationUpdate) => {
+  const handleSave = async (id: Id<"vaccinations">, data: VaccinationUpdate) => {
     await updateVaccination(id, data, DOCTOR);
     await queryClient.invalidateQueries({ queryKey: ["patient", patientId] });
     toast.success("Impfung gespeichert");

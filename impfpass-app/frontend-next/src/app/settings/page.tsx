@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Copy, Check, RefreshCw, ShieldCheck, UserPlus, KeyRound } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { TopBar } from "@/components/layout/TopBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +12,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -201,104 +198,6 @@ function UsersTab() {
   );
 }
 
-function SecurityTab() {
-  return (
-    <Card className="border-border shadow-none rounded-2xl">
-      <CardHeader>
-        <CardTitle className="text-base">Sicherheit</CardTitle>
-        <CardDescription>Zwei-Faktor-Authentifizierung und Sicherheitsoptionen</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        {[
-          { label: "Zwei-Faktor-Authentifizierung", desc: "TOTP-App oder SMS", enabled: true },
-          { label: "Audit-Logging", desc: "Alle Aktionen protokollieren (DSGVO)", enabled: true },
-          { label: "Session-Timeout", desc: "Automatisch abmelden nach 30 Min.", enabled: true },
-          { label: "IP-Whitelist", desc: "Nur aus bekannten Netzwerken zulassen", enabled: false },
-        ].map((item) => (
-          <div key={item.label} className="flex items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                <Label className="text-sm font-medium">{item.label}</Label>
-              </div>
-              <p className="ml-6 text-xs text-muted-foreground">{item.desc}</p>
-            </div>
-            <Switch defaultChecked={item.enabled} />
-          </div>
-        ))}
-        <Separator />
-        <div>
-          <p className="text-sm font-medium mb-2">Passwort ändern</p>
-          <div className="grid gap-3 max-w-sm">
-            <Input type="password" placeholder="Aktuelles Passwort" />
-            <Input type="password" placeholder="Neues Passwort" />
-            <Input type="password" placeholder="Passwort wiederholen" />
-            <Button variant="outline" className="w-full" onClick={() => toast.success("Passwort geändert")}>
-              Passwort aktualisieren
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ApiTab() {
-  const [key] = useState("sk_prod_••••••••••••••••••••••••••••3f9a");
-  const [copied, setCopied] = useState(false);
-
-  function copyKey() {
-    navigator.clipboard.writeText("sk_prod_DEMO_KEY_FOR_HACKATHON_3f9a").then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  }
-
-  return (
-    <Card className="border-border shadow-none rounded-2xl">
-      <CardHeader>
-        <CardTitle className="text-base">API-Einstellungen</CardTitle>
-        <CardDescription>Zugriff für externe Dienste und Integrationen</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-5">
-        <div>
-          <Label className="text-sm">API-Schlüssel</Label>
-          <div className="mt-2 flex gap-2">
-            <div className="flex-1 rounded-lg border border-border bg-muted/30 px-3 py-2 font-mono text-sm text-muted-foreground">
-              {key}
-            </div>
-            <Button variant="outline" size="icon" onClick={copyKey}>
-              {copied ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-4 w-4" />}
-            </Button>
-            <Button variant="outline" size="icon" onClick={() => toast.info("API-Schlüssel regeneriert")}>
-              <RefreshCw className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="mt-1.5 text-xs text-muted-foreground">
-            Schlüssel nur einmal anzeigbar. Bei Verlust neu generieren.
-          </p>
-        </div>
-        <Separator />
-        <div className="space-y-3">
-          <Label className="text-sm font-medium">Endpunkte</Label>
-          {[
-            { method: "POST", path: "/api/v1/import", desc: "Impfpass-Import (OCR-Pipeline)" },
-            { method: "GET", path: "/api/v1/patients", desc: "Patientenliste" },
-            { method: "PATCH", path: "/api/v1/vaccinations/{id}/verify", desc: "Signatur" },
-          ].map((ep) => (
-            <div key={ep.path} className="flex items-center gap-3 rounded-lg border border-border px-3 py-2.5">
-              <KeyRound className="h-4 w-4 text-muted-foreground shrink-0" />
-              <Badge variant="outline" className="text-[10px] font-mono shrink-0">{ep.method}</Badge>
-              <code className="text-xs font-mono text-muted-foreground">{ep.path}</code>
-              <span className="ml-auto text-xs text-muted-foreground hidden sm:block">{ep.desc}</span>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
 export default function SettingsPage() {
   return (
     <>
@@ -313,13 +212,9 @@ export default function SettingsPage() {
             <TabsList className="mb-6">
               <TabsTrigger value="praxis">Praxis</TabsTrigger>
               <TabsTrigger value="users">Benutzer</TabsTrigger>
-              <TabsTrigger value="security">Sicherheit</TabsTrigger>
-              <TabsTrigger value="api">API</TabsTrigger>
             </TabsList>
             <TabsContent value="praxis"><PraxisTab /></TabsContent>
             <TabsContent value="users"><UsersTab /></TabsContent>
-            <TabsContent value="security"><SecurityTab /></TabsContent>
-            <TabsContent value="api"><ApiTab /></TabsContent>
           </Tabs>
         </div>
       </main>

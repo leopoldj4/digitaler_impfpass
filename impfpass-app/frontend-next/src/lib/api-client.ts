@@ -1,121 +1,165 @@
-import type { PatientListItem, PatientDetail } from "@/types/patient";
+import { ConvexHttpClient } from "convex/browser";
+import { api as convexApi } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
+import type { UploadResponse, VaccinationDocument } from "@/types/document";
+import type { PatientDetail, PatientListItem } from "@/types/patient";
 import type { SignVaccinationsResponse, Vaccination, VaccinationUpdate } from "@/types/vaccination";
-import type { VaccinationDocument } from "@/types/document";
-import {
-  MOCK_PATIENTS,
-  MOCK_PATIENT_DETAIL,
-} from "./mock-data";
-import { ACCESS_TOKEN_COOKIE, getBrowserAccessToken } from "./auth";
 
-const USE_MOCK = process.env.NEXT_PUBLIC_USE_MOCK === "true";
-const SERVER_BASE =
-  typeof window === "undefined"
-    ? `${process.env.API_BASE_URL ?? "http://localhost:8000"}/api/v1`
-    : "/api/v1";
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
-async function getServerAccessToken() {
-  if (typeof window !== "undefined") return null;
-  const { cookies } = await import("next/headers");
-  return (await cookies()).get(ACCESS_TOKEN_COOKIE)?.value ?? null;
+if (!convexUrl) {
+  throw new Error("NEXT_PUBLIC_CONVEX_URL is required.");
 }
 
-async function authHeaders(init?: RequestInit) {
-  const headers = new Headers(init?.headers);
-  const token =
-    typeof window === "undefined"
-      ? await getServerAccessToken()
-      : getBrowserAccessToken();
+const convex = new ConvexHttpClient(convexUrl);
 
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
-  }
+type ConvexPatient = {
+  _id: Id<"patients">;
+  first_name: string;
+  last_name: string;
+  birth_date: string;
+  created_at: string;
+  vaccination_count: number;
+  needs_review_count: number;
+};
 
-  return headers;
+type ConvexVaccination = Omit<Vaccination, "id"> & {
+  _id: Id<"vaccinations">;
+};
+
+type ConvexDocument = Omit<VaccinationDocument, "id" | "file_path" | "url"> & {
+  _id: Id<"vaccination_documents">;
+  url: string | null;
+};
+
+type ConvexPatientDetail = ConvexPatient & {
+  vaccinations: ConvexVaccination[];
+  documents: ConvexDocument[];
+};
+
+function mapPatient(patient: ConvexPatient): PatientListItem {
+  return {
+    id: patient._id,
+    first_name: patient.first_name,
+    last_name: patient.last_name,
+    birth_date: patient.birth_date,
+    vaccination_count: patient.vaccination_count,
+    needs_review_count: patient.needs_review_count,
+  };
 }
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${SERVER_BASE}${path}`, {
-    ...init,
-    headers: await authHeaders({
-      ...init,
-      headers: { "Content-Type": "application/json", ...init?.headers },
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error((err as Record<string, string>)?.detail ?? `HTTP ${res.status}`);
-  }
-  return res.json() as Promise<T>;
+function mapVaccination(vaccination: ConvexVaccination): Vaccination {
+  return {
+    ...vaccination,
+    id: vaccination._id,
+  };
+}
+
+function mapDocument(document: ConvexDocument): VaccinationDocument {
+  return {
+    id: document._id,
+    patient_id: document.patient_id,
+    file_name: document.file_name,
+    file_path: document.url ?? "",
+    file_type: document.file_type,
+    page_number: document.page_number,
+    uploaded_at: document.uploaded_at,
+    url: document.url ?? "",
+  };
+}
+
+function mapPatientDetail(patient: ConvexPatientDetail): PatientDetail {
+  return {
+    ...mapPatient(patient),
+    created_at: patient.created_at,
+    vaccinations: patient.vaccinations.map(mapVaccination),
+    documents: patient.documents.map(mapDocument),
+  };
 }
 
 export const api = {
   patients: {
     list: async (search?: string): Promise<PatientListItem[]> => {
-      if (USE_MOCK) {
-        if (!search) return MOCK_PATIENTS;
-        const q = search.toLowerCase();
-        return MOCK_PATIENTS.filter(
-          (p) =>
-            p.last_name.toLowerCase().includes(q) ||
-            p.first_name.toLowerCase().includes(q)
-        );
-      }
-      const qs = search ? `?search=${encodeURIComponent(search)}` : "";
-      return apiFetch<PatientListItem[]>(`/patients${qs}`);
+      const patients = await convex.query(convexApi.patients.list, { search: search ?? null });
+      return patients.map(mapPatient);
     },
 
-    get: async (id: number): Promise<PatientDetail> => {
-      if (USE_MOCK) {
-        const base = MOCK_PATIENTS.find((p) => p.id === id);
-        if (!base) throw new Error("Patient not found");
-        return { ...MOCK_PATIENT_DETAIL, ...base, id };
+    get: async (id: Id<"patients">): Promise<PatientDetail> => {
+      const patient = await convex.query(convexApi.patients.get, { id });
+      if (!patient) {
+        throw new Error("Patient not found");
       }
-      return apiFetch<PatientDetail>(`/patients/${id}`);
+      return mapPatientDetail(patient);
     },
   },
 
   vaccinations: {
     update: (
-      id: number,
+      id: Id<"vaccinations">,
       data: VaccinationUpdate,
       performedBy: string
     ): Promise<Vaccination> =>
-      apiFetch<Vaccination>(
-        `/vaccinations/${id}?performed_by=${encodeURIComponent(performedBy)}`,
-        { method: "PUT", body: JSON.stringify(data) }
-      ),
-
-    verify: (id: number, performedBy: string): Promise<unknown> =>
-      apiFetch(
-        `/vaccinations/${id}/verify?performed_by=${encodeURIComponent(performedBy)}`,
-        { method: "PATCH" }
-      ),
-
-    sign: (vaccinationIds: number[], password: string): Promise<SignVaccinationsResponse> =>
-      apiFetch<SignVaccinationsResponse>("/vaccinations/sign", {
-        method: "POST",
-        body: JSON.stringify({
-          vaccination_ids: vaccinationIds,
-          password,
+      convex
+        .mutation(convexApi.vaccinations.update, { id, data, performed_by: performedBy })
+        .then((vaccination) => {
+          if (!vaccination) {
+            throw new Error("Impfeintrag nicht gefunden.");
+          }
+          return mapVaccination(vaccination);
         }),
-      }),
+
+    verify: (id: Id<"vaccinations">, performedBy: string): Promise<unknown> =>
+      convex.mutation(convexApi.vaccinations.verify, { id, performed_by: performedBy }),
+
+    sign: async (vaccinationIds: Id<"vaccinations">[]): Promise<SignVaccinationsResponse> => {
+      const signedAt = new Date().toISOString();
+
+      return {
+        signed_count: vaccinationIds.length,
+        signature_hash: `mock-${signedAt}`,
+        signed_at: signedAt,
+        signed_by: "Dr. Demo",
+        vaccination_ids: vaccinationIds,
+        message: `${vaccinationIds.length} Impfeintrag/Einträge als Mock signiert.`,
+      };
+    },
   },
 
   documents: {
-    upload: async (patientId: number, files: File[]): Promise<unknown> => {
-      const form = new FormData();
-      form.append("patient_id", String(patientId));
-      files.forEach((f) => form.append("files", f));
-      const res = await fetch("/api/v1/documents/upload", {
-        method: "POST",
-        headers: await authHeaders(),
-        body: form,
-      });
-      if (!res.ok) throw new Error(`Upload failed: HTTP ${res.status}`);
-      return res.json();
+    upload: async (patientId: Id<"patients">, files: File[]): Promise<UploadResponse> => {
+      for (const file of files) {
+        const uploadUrl = await convex.mutation(convexApi.documents.generateUploadUrl, {});
+        const upload = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": file.type || "application/octet-stream" },
+          body: file,
+        });
+
+        if (!upload.ok) {
+          throw new Error(`Upload failed: HTTP ${upload.status}`);
+        }
+
+        const { storageId } = (await upload.json()) as { storageId: Id<"_storage"> };
+        await convex.mutation(convexApi.documents.registerUploadedDocument, {
+          patient_id: patientId,
+          storage_id: storageId,
+          file_name: file.name,
+          file_type: file.type || "application/octet-stream",
+          page_number: null,
+        });
+      }
+
+      return {
+        documents: await api.documents.list(patientId),
+        extracted_count: 0,
+      };
     },
 
-    list: (patientId: number): Promise<VaccinationDocument[]> =>
-      apiFetch<VaccinationDocument[]>(`/documents/${patientId}`),
+    list: async (patientId: Id<"patients">): Promise<VaccinationDocument[]> => {
+      const documents = await convex.query(convexApi.documents.listByPatient, {
+        patient_id: patientId,
+      });
+      return documents.map(mapDocument);
+    },
   },
 };
