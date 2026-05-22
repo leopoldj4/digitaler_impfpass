@@ -67,15 +67,17 @@ export default defineSchema({
     file_name: v.string(),
     file_type: v.string(),
     page_number: nullable(v.number()),
-    extraction_status: v.union(
-      v.literal("pending"),
-      v.literal("succeeded"),
-      v.literal("failed"),
-      v.literal("skipped")
+    extraction_status: v.optional(
+      v.union(
+        v.literal("pending"),
+        v.literal("succeeded"),
+        v.literal("failed"),
+        v.literal("skipped")
+      )
     ),
-    extraction_result: nullable(v.any()),
-    extraction_error: nullable(v.string()),
-    extracted_at: nullable(v.string()),
+    extraction_result: v.optional(nullable(v.any())),
+    extraction_error: v.optional(nullable(v.string())),
+    extracted_at: v.optional(nullable(v.string())),
     uploaded_at: v.string(),
   })
     .index("by_patient_id", ["patient_id"])

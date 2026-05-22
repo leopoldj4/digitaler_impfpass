@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { action, internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import type { MutationCtx } from "./_generated/server";
 
 const nullableString = v.union(v.string(), v.null());
 
@@ -79,15 +80,68 @@ export const registerUploadedDocument = mutation({
 const extractedVaccination = v.object({
   date: v.union(v.string(), v.null()),
   id: v.union(v.string(), v.null()),
+  name: v.optional(v.union(v.string(), v.null())),
+  diseases: v.union(v.array(v.string()), v.null()),
+  bounding_box: v.union(v.array(v.number()), v.null())
 });
 
 const extractionResponse = v.object({
-  birth_date: v.union(v.string(), v.null()),
-  birth_place: v.union(v.string(), v.null()),
-  first_name: v.union(v.string(), v.null()),
-  last_name: v.union(v.string(), v.null()),
-  vaccinations: v.union(v.array(extractedVaccination), v.null()),
+  vaccinations: v.array(extractedVaccination),
 });
+
+function normalizeVaccinationDate(value: string | null) {
+  const trimmed = value?.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  const match = trimmed.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{4})$/);
+  if (!match) {
+    return null;
+  }
+
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  if (
+    parsed.getUTCFullYear() !== year ||
+    parsed.getUTCMonth() !== month - 1 ||
+    parsed.getUTCDate() !== day
+  ) {
+    return null;
+  }
+
+  return `${year.toString().padStart(4, "0")}-${month.toString().padStart(2, "0")}-${day
+    .toString()
+    .padStart(2, "0")}`;
+}
+
+async function resolveVaccineName(ctx: MutationCtx, vaccination: {
+  id: string | null;
+  name?: string | null;
+}) {
+  const rawId = vaccination.id?.trim() ?? "";
+  const extractedName = vaccination.name?.trim() ?? "";
+  const numericId = /^\d+$/.test(rawId) ? Number(rawId) : null;
+
+  if (numericId !== null) {
+    const vaccine = await ctx.db
+      .query("vaccines")
+      .withIndex("by_catalog_id", (q) => q.eq("id", numericId))
+      .unique();
+
+    if (vaccine) {
+      return vaccine.brand || vaccine.name;
+    }
+  }
+
+  return extractedName || rawId || null;
+}
 
 export const getDocumentForExtraction = internalQuery({
   args: {
@@ -131,17 +185,18 @@ export const storeExtractionResult = internalMutation({
     let insertedCount = 0;
 
     for (const vaccination of args.extraction.vaccinations ?? []) {
-      if (!vaccination.id) {
+      const vaccineName = await resolveVaccineName(ctx, vaccination);
+      if (!vaccineName) {
         continue;
       }
 
       await ctx.db.insert("vaccinations", {
         patient_id: document.patient_id,
-        vaccine_name: vaccination.id,
+        vaccine_name: vaccineName,
         vaccine_type: null,
         manufacturer: null,
         batch_number: null,
-        vaccination_date: vaccination.date,
+        vaccination_date: normalizeVaccinationDate(vaccination.date),
         valid_until: null,
         indication: null,
         doctor_stamp: null,
