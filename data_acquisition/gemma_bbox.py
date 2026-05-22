@@ -16,9 +16,9 @@ from dotenv import dotenv_values
 from PIL import Image, ImageDraw
 from whoosh import index
 from whoosh.fields import ID, TEXT, Schema
-from whoosh.qparser import MultifieldParser
+from whoosh.qparser import QueryParser
 
-STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (1995, 2011, etc.) angegeben werden! At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
+STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (19.11.1995, 11.09.2011, etc.) angegeben werden! Die Namen der Impfstoffe sollen ohne Chargennummer angegeben werden. At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
 
 STEP1_SCHEMA_HINT = {
     "vaccinations": [
@@ -88,9 +88,15 @@ def parse_args() -> argparse.Namespace:
         help="Load step-1 JSON from file and skip step-1 model call",
     )
     parser.add_argument(
+        "--think",
+        default=True,
+        action=argparse.BooleanOptionalAction,
+        help="Enable model thinking/reasoning (--no-think to disable)",
+    )
+    parser.add_argument(
         "--debug",
         action="store_true",
-        help="Print prompts/context and raw model thinking/output",
+        help="Print prompts/context and stream model thinking/output live",
     )
     return parser.parse_args()
 
@@ -180,7 +186,7 @@ def rebuild_whoosh_index(records: list[dict[str, str]], whoosh_dir: Path) -> Non
 
 def whoosh_search(whoosh_dir: Path, query: str, limit: int = 5) -> list[dict[str, str]]:
     idx = index.open_dir(str(whoosh_dir))
-    parser = MultifieldParser(["name", "diseases"], schema=idx.schema)
+    parser = QueryParser("name", schema=idx.schema)
     parsed_query = parser.parse(query)
 
     with idx.searcher() as searcher:
@@ -228,6 +234,80 @@ def debug_print(debug: bool, title: str, data: Any) -> None:
         print(json.dumps(safe, indent=2, ensure_ascii=False))
 
 
+def _iter_sse_lines(resp: Any) -> Any:
+    """Yield lines from an SSE response without relying on Python's readline()
+    buffer, which silently accumulates data before returning anything."""
+    buf = b""
+    while True:
+        chunk = resp.read(64)
+        if not chunk:
+            if buf:
+                yield buf.decode("utf-8", errors="replace").rstrip("\r")
+            break
+        buf += chunk
+        while b"\n" in buf:
+            line_b, buf = buf.split(b"\n", 1)
+            yield line_b.decode("utf-8", errors="replace").rstrip("\r")
+
+
+def _read_streaming_response(resp: Any, debug: bool, debug_title: str) -> dict[str, Any]:
+    thinking_parts: list[str] = []
+    content_parts: list[str] = []
+    in_thinking = False
+    in_content = False
+
+    for line in _iter_sse_lines(resp):
+        if not line.startswith("data: "):
+            continue
+        payload_str = line[6:]
+        if payload_str.strip() == "[DONE]":
+            break
+        try:
+            chunk = json.loads(payload_str)
+        except json.JSONDecodeError:
+            continue
+
+        choices = chunk.get("choices")
+        if not isinstance(choices, list) or not choices:
+            continue
+        delta = choices[0].get("delta", {})
+
+        # llama.cpp uses "reasoning_content"; some servers use "thinking"
+        thinking_tok = delta.get("reasoning_content") or delta.get("thinking") or ""
+        content_tok = delta.get("content") or ""
+
+        if thinking_tok:
+            if debug and not in_thinking:
+                print(f"\n===== DEBUG: {debug_title} thinking (live) =====", flush=True)
+                in_thinking = True
+            thinking_parts.append(thinking_tok)
+            if debug:
+                print(thinking_tok, end="", flush=True)
+
+        if content_tok:
+            if debug and not in_content:
+                print(f"\n===== DEBUG: {debug_title} response (live) =====", flush=True)
+                in_content = True
+            content_parts.append(content_tok)
+            if debug:
+                print(content_tok, end="", flush=True)
+
+    if debug and (in_thinking or in_content):
+        print(flush=True)
+
+    return {
+        "choices": [
+            {
+                "message": {
+                    "role": "assistant",
+                    "content": "".join(content_parts),
+                    "thinking": "".join(thinking_parts),
+                }
+            }
+        ]
+    }
+
+
 def call_llama_chat(
     base_url: str,
     api_key: str | None,
@@ -235,21 +315,25 @@ def call_llama_chat(
     debug: bool = False,
     debug_title: str = "llama request",
 ) -> dict[str, Any]:
+    # Always stream in debug mode so both thinking and response tokens appear
+    # live in the console instead of blocking until the full response arrives.
+    use_stream = debug
+    payload = {**payload, "stream": use_stream}
+
     endpoint = f"{base_url}/v1/chat/completions"
     data = json.dumps(payload).encode("utf-8")
 
-    headers = {
-        "Content-Type": "application/json",
-    }
+    headers = {"Content-Type": "application/json"}
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
 
     req = Request(endpoint, data=data, headers=headers, method="POST")
-
     debug_print(debug, f"{debug_title} payload", payload)
 
     try:
-        with urlopen(req, timeout=240) as resp:
+        with urlopen(req, timeout=2400) as resp:
+            if use_stream:
+                return _read_streaming_response(resp, debug, debug_title)
             body = resp.read().decode("utf-8")
     except HTTPError as exc:
         err_body = exc.read().decode("utf-8", errors="replace") if hasattr(exc, "read") else ""
@@ -326,7 +410,8 @@ def build_initial_guesses(
         name = str(item.get("name", "")).strip()
         date = str(item.get("date", "")).strip()
         diseases = [str(d).strip() for d in item.get("diseases", []) if str(d).strip()]
-        candidates = whoosh_search(whoosh_dir, name, limit=limit) if name else []
+        search_query = _clean_query(name)
+        candidates = whoosh_search(whoosh_dir, search_query, limit=limit) if search_query else []
         guesses.append(
             {
                 "name": name,
@@ -346,9 +431,10 @@ def query_step1(
     model: str,
     image_bytes: bytes,
     mime_type: str,
+    think: bool = True,
     debug: bool = False,
 ) -> dict[str, Any]:
-    payload = {
+    payload: dict[str, Any] = {
         "model": model,
         "messages": [
             {
@@ -371,9 +457,15 @@ def query_step1(
         ],
         "response_format": {"type": "json_object"},
         "temperature": 0,
+        "repetition_penalty": 1.2,
         "stream": False,
-        "think": True,
     }
+    if think:
+        payload["think"] = True
+    else:
+        # "think": false is ignored by llama.cpp; reasoning_budget=0 actually stops it
+        payload["think"] = False
+        payload["reasoning_budget"] = 0
 
     debug_print(debug, "step1 composed message", payload["messages"])
     response = call_llama_chat(base_url, api_key, payload, debug=debug, debug_title="step1")
@@ -382,12 +474,38 @@ def query_step1(
     return parse_step1_response(message)
 
 
-MIN_FUZZY_NAME_SCORE = 60
+MIN_FUZZY_NAME_SCORE = 30
+
+_QUERY_NOISE_WORDS = frozenset({
+    "impfung", "impfstoff", "vaccination", "vaccine", "vaccin",
+    "gegen", "immunisierung", "schutzimpfung",
+})
+
+
+def _clean_query(name: str) -> str:
+    """Remove generic vaccination terms from a detected vaccine name.
+
+    Splits on both spaces and hyphens so 'FSME-Impfung' → 'FSME'.
+    Falls back to the original string if all tokens were noise words."""
+    tokens = [t for t in re.split(r"[\s\-]+", name) if t and t.lower() not in _QUERY_NOISE_WORDS]
+    return " ".join(tokens) or name
 
 
 def _disease_coverage(candidate: dict[str, str], detected: list[str]) -> int:
     candidate_diseases = candidate["diseases"].lower()
     return sum(1 for d in detected if d.lower() in candidate_diseases)
+
+
+_EXACT_TOKEN_BONUS = 40  # added per query token found verbatim in the candidate name
+
+
+def _exact_token_bonus(query: str, candidate_name: str) -> float:
+    # Split on all non-alphanumeric characters (spaces, hyphens, slashes, …) so
+    # "FSME-Immun" and "FSME Immun" both produce {"fsme", "immun"}.
+    query_tokens = {t for t in re.split(r"\W+", query.lower()) if t}
+    name_tokens = {t for t in re.split(r"\W+", candidate_name.lower()) if t}
+    matched = len(query_tokens & name_tokens)
+    return matched * _EXACT_TOKEN_BONUS
 
 
 def _fuzzy_search(
@@ -399,7 +517,8 @@ def _fuzzy_search(
     """Gate logic:
     - With detected diseases: name score >= MIN_FUZZY_NAME_SCORE AND disease overlap > 0.
     - Without detected diseases: name score >= MIN_FUZZY_NAME_SCORE only.
-    Candidates failing their gate are rejected entirely."""
+    Candidates failing their gate are rejected. Survivors are ranked by fuzzy name
+    score plus a bonus for each query token that appears verbatim in the candidate name."""
     q = query.lower()
     try:
         from rapidfuzz import fuzz
@@ -419,7 +538,8 @@ def _fuzzy_search(
         else:
             passes = name_ok
         if passes:
-            accepted.append((rec, ns))
+            bonus = _exact_token_bonus(query, rec["name"])
+            accepted.append((rec, ns + bonus))
 
     accepted.sort(key=lambda x: x[1], reverse=True)
     return [rec for rec, _ in accepted[:limit]]
@@ -437,17 +557,20 @@ def assign_from_guesses(
         name = guess.get("name", "")
         diseases = guess.get("diseases", [])
 
+        # Apply disease gate to Whoosh results: when diseases are known, only keep
+        # candidates that cover at least one of them.
+        if candidates and diseases:
+            candidates = [c for c in candidates if _disease_coverage(c, diseases) > 0]
+            debug_print(debug, f"step2 whoosh after disease gate for '{name}'", candidates)
+
+        # Fuzzy fallback when Whoosh returned nothing or all were filtered out.
         if not candidates and name:
-            candidates = _fuzzy_search(records, name, detected_diseases=diseases or None)
+            candidates = _fuzzy_search(records, _clean_query(name), detected_diseases=diseases or None)
             debug_print(debug, f"step2 fuzzy fallback for '{name}'", candidates)
 
-        if candidates and diseases:
-            # Re-rank by disease coverage; stable sort preserves score order for ties.
-            candidates = sorted(
-                candidates,
-                key=lambda c: _disease_coverage(c, diseases),
-                reverse=True,
-            )
+        # Among surviving candidates, prefer highest disease coverage.
+        if len(candidates) > 1 and diseases:
+            candidates = sorted(candidates, key=lambda c: _disease_coverage(c, diseases), reverse=True)
             debug_print(debug, f"step2 disease-reranked for '{name}'", candidates)
 
         entry: dict[str, Any] = {"id": str(candidates[0]["id"]) if candidates else "unbekannt", "date": date}
@@ -528,6 +651,7 @@ def main() -> int:
             args.model,
             image_bytes,
             mime_type,
+            think=args.think,
             debug=args.debug,
         )
         step1_json_path.write_text(
