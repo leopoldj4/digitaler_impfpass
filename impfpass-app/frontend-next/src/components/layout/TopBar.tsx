@@ -1,5 +1,6 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { Fragment } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -27,16 +28,16 @@ export function TopBar({ crumbs, actions }: TopBarProps) {
       <Breadcrumb className="flex-1">
         <BreadcrumbList>
           {crumbs.map((crumb, i) => (
-            <BreadcrumbItem key={i}>
-              {i < crumbs.length - 1 ? (
-                <>
+            <Fragment key={i}>
+              <BreadcrumbItem>
+                {i < crumbs.length - 1 ? (
                   <BreadcrumbLink href={crumb.href ?? "#"}>{crumb.label}</BreadcrumbLink>
-                  <BreadcrumbSeparator />
-                </>
-              ) : (
-                <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
-              )}
-            </BreadcrumbItem>
+                ) : (
+                  <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                )}
+              </BreadcrumbItem>
+              {i < crumbs.length - 1 && <BreadcrumbSeparator />}
+            </Fragment>
           ))}
         </BreadcrumbList>
       </Breadcrumb>

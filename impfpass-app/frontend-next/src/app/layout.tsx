@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
-import { AppSidebar } from "@/components/layout/AppSidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "DigitalImpfpass — Praxissoftware",
@@ -18,12 +17,7 @@ export default function RootLayout({
     <html lang="de" className="h-full antialiased" suppressHydrationWarning>
       <body className="h-full">
         <Providers>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset className="flex flex-col min-h-svh">
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
+          <AppShell>{children}</AppShell>
         </Providers>
       </body>
     </html>
