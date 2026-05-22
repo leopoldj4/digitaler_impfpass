@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Search, Users, ChevronLeft, ChevronRight, X, AlertTriangle, Clock, Mail, CheckCircle2 } from "lucide-react";
+import { Search, Users, ChevronLeft, ChevronRight, X, AlertTriangle, Clock, Mail, CheckCircle2, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import {
 import { MoreHorizontal, ShieldCheck, QrCode } from "lucide-react";
 import { usePatients } from "@/hooks/usePatients";
 import { formatDate, getInitials } from "@/lib/utils";
+import { AddPatientDialog } from "./AddPatientDialog";
 import type { PatientListItem } from "@/types/patient";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -138,6 +139,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [page, setPage] = useState(0);
+  const [addPatientOpen, setAddPatientOpen] = useState(false);
 
   const { data: patients = [], isLoading } = usePatients(debouncedSearch || undefined, initialData);
 
@@ -181,7 +183,12 @@ export function PatientTable({ initialData }: PatientTableProps) {
         <span className="text-sm text-muted-foreground">
           {patients.length} Patient{patients.length !== 1 ? "en" : ""}
         </span>
+        <Button size="sm" className="gap-1.5 ml-auto" onClick={() => setAddPatientOpen(true)}>
+          <UserPlus className="h-4 w-4" />
+          Neuen Patienten hinzufügen
+        </Button>
       </div>
+      <AddPatientDialog open={addPatientOpen} onOpenChange={setAddPatientOpen} />
 
       <div className="rounded-2xl border border-border overflow-hidden bg-card">
         <Table>

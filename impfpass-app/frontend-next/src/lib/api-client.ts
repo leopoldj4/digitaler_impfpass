@@ -3,7 +3,7 @@ import { api as convexApi } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { UploadResponse, VaccinationDocument } from "@/types/document";
 import type { PatientDetail, PatientListItem } from "@/types/patient";
-import type { SignVaccinationsResponse, Vaccination, VaccinationUpdate } from "@/types/vaccination";
+import type { SignVaccinationsResponse, Vaccination, VaccinationCreate, VaccinationUpdate } from "@/types/vaccination";
 
 const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
 
@@ -91,6 +91,9 @@ export const api = {
       }
       return mapPatientDetail(patient);
     },
+
+    create: async (data: { first_name: string; last_name: string; birth_date: string }): Promise<Id<"patients">> =>
+      convex.mutation(convexApi.patients.create, data),
   },
 
   vaccinations: {
@@ -110,6 +113,9 @@ export const api = {
 
     verify: (id: Id<"vaccinations">, performedBy: string): Promise<unknown> =>
       convex.mutation(convexApi.vaccinations.verify, { id, performed_by: performedBy }),
+
+    create: async (patientId: Id<"patients">, data: VaccinationCreate): Promise<Id<"vaccinations">> =>
+      convex.mutation(convexApi.vaccinations.create, { patient_id: patientId, ...data }),
 
     sign: async (vaccinationIds: Id<"vaccinations">[]): Promise<SignVaccinationsResponse> => {
       const signedAt = new Date().toISOString();

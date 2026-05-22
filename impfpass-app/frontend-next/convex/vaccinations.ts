@@ -3,6 +3,46 @@ import { mutation } from "./_generated/server";
 
 const nullableString = v.union(v.string(), v.null());
 
+export const create = mutation({
+  args: {
+    patient_id: v.id("patients"),
+    vaccine_name: v.string(),
+    vaccine_type: nullableString,
+    manufacturer: nullableString,
+    batch_number: nullableString,
+    vaccination_date: nullableString,
+    valid_until: nullableString,
+    indication: nullableString,
+  },
+  handler: async (ctx, args) => {
+    const now = new Date().toISOString();
+    const id = await ctx.db.insert("vaccinations", {
+      patient_id: args.patient_id,
+      vaccine_name: args.vaccine_name,
+      vaccine_type: args.vaccine_type,
+      manufacturer: args.manufacturer,
+      batch_number: args.batch_number,
+      vaccination_date: args.vaccination_date,
+      valid_until: args.valid_until,
+      indication: args.indication,
+      doctor_stamp: null,
+      is_verified: false,
+      verified_at: null,
+      verified_by: null,
+      digital_signature_hash: null,
+      digital_signature_payload: null,
+      digital_signed_at: null,
+      digital_signed_by: null,
+      confidence_score: null,
+      needs_review: true,
+      raw_json: null,
+      created_at: now,
+      updated_at: now,
+    });
+    return id;
+  },
+});
+
 const updateValidator = v.object({
   vaccine_name: v.optional(v.string()),
   vaccine_type: v.optional(nullableString),

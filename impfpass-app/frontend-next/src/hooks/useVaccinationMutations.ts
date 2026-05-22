@@ -3,8 +3,20 @@ import { toast } from "sonner";
 import { api } from "@/lib/api-client";
 import { queryKeys } from "@/lib/query-keys";
 import type { PatientDetail } from "@/types/patient";
-import type { VaccinationUpdate } from "@/types/vaccination";
+import type { VaccinationCreate, VaccinationUpdate } from "@/types/vaccination";
 import type { Id } from "../../convex/_generated/dataModel";
+
+export function useVaccinationCreate(patientId: Id<"patients">) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (data: VaccinationCreate) => api.vaccinations.create(patientId, data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.patients.detail(patientId) });
+      toast.success("Impfung hinzugefügt");
+    },
+    onError: (e: Error) => toast.error(`Fehler: ${e.message}`),
+  });
+}
 
 export function useVaccinationUpdate(patientId: Id<"patients">) {
   const qc = useQueryClient();
