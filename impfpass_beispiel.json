@@ -1,0 +1,32 @@
+{
+  "first_name": null,
+  "last_name": null,
+  "birth_date": null,
+  "birth_place": null,
+  "vaccinations": [
+    {
+      "date": "19. JAN. 2007",
+      "name": "Priorix/A69CA67A"
+    },
+    {
+      "date": "11. MAI 2007",
+      "name": "Priorix/A69CA751A"
+    },
+    {
+      "date": "21.3.2011",
+      "name": "005011A/IPV-VIRELON* (vaccine)"
+    },
+    {
+      "date": "27.6.11",
+      "name": "CV311AB"
+    },
+    {
+      "date": "3.12",
+      "name": "AHBVC006AE"
+    },
+    {
+      "date": "19.07.2011",
+      "name": "boontrix/AC37B346GC"
+    }
+  ]
+}
