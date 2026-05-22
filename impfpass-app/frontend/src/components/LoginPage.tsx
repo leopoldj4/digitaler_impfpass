@@ -157,7 +157,11 @@ export default function LoginPage({ onAuthenticated }: Props) {
                 </div>
               </label>
 
-              <Button className="h-10 w-full gap-2" disabled={!canSubmitPassword || status.type === "loading"}>
+              <Button
+                type="submit"
+                className="h-10 w-full gap-2"
+                disabled={!canSubmitPassword || status.type === "loading"}
+              >
                 <KeyRound className="h-4 w-4" />
                 Weiter
               </Button>
@@ -183,7 +187,11 @@ export default function LoginPage({ onAuthenticated }: Props) {
                 </div>
               )}
 
-              <Button className="h-10 w-full gap-2" disabled={!canSubmitCode || status.type === "loading"}>
+              <Button
+                type="submit"
+                className="h-10 w-full gap-2"
+                disabled={!canSubmitCode || status.type === "loading"}
+              >
                 <CheckCircle2 className="h-4 w-4" />
                 Prüfen und öffnen
               </Button>
@@ -211,4 +219,3 @@ export default function LoginPage({ onAuthenticated }: Props) {
     </main>
   );
 }
-
