@@ -33,6 +33,16 @@ export interface SignVaccinationsResponse {
   message: string;
 }
 
+export interface VaccinationCreate {
+  vaccine_name: string;
+  vaccine_type: string | null;
+  manufacturer: string | null;
+  batch_number: string | null;
+  vaccination_date: string | null;
+  valid_until: string | null;
+  indication: string | null;
+}
+
 export interface VaccinationUpdate {
   vaccine_name?: string;
   vaccine_type?: string | null;
