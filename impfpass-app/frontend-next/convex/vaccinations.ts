@@ -15,15 +15,6 @@ const updateValidator = v.object({
   needs_review: v.optional(v.boolean()),
 });
 
-function signatureHash(parts: string[]) {
-  let hash = 0x811c9dc5;
-  for (const part of parts.join("|")) {
-    hash ^= part.charCodeAt(0);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return Math.abs(hash >>> 0).toString(16).padStart(8, "0");
-}
-
 export const update = mutation({
   args: {
     id: v.id("vaccinations"),
@@ -97,64 +88,6 @@ export const verify = mutation({
       verified_at: now,
       verified_by: args.performed_by,
       message: `Impfeintrag ${args.id} erfolgreich signiert.`,
-    };
-  },
-});
-
-export const sign = mutation({
-  args: {
-    vaccination_ids: v.array(v.id("vaccinations")),
-  },
-  handler: async (ctx, args) => {
-    const now = new Date().toISOString();
-    const signerName = "Dr. Demo";
-    const signaturePayload = {
-      signed_at: now,
-      signed_by: signerName,
-      signer_id: "demo-signer",
-      signer_email: "demo@example.com",
-      vaccination_ids: args.vaccination_ids,
-    };
-    const hash = signatureHash([now, signerName, ...args.vaccination_ids]);
-
-    let signedCount = 0;
-    for (const id of args.vaccination_ids) {
-      const vaccination = await ctx.db.get(id);
-      if (!vaccination) {
-        throw new Error("Mindestens ein Impfeintrag wurde nicht gefunden.");
-      }
-
-      await ctx.db.patch(id, {
-        is_verified: true,
-        verified_at: now,
-        verified_by: signerName,
-        digital_signature_hash: hash,
-        digital_signature_payload: signaturePayload,
-        digital_signed_at: now,
-        digital_signed_by: signerName,
-        needs_review: false,
-        updated_at: now,
-      });
-
-      await ctx.db.insert("audit_log", {
-        patient_id: vaccination.patient_id,
-        action: "SIGN",
-        field_changed: "digital_signature_hash",
-        old_value: vaccination.digital_signature_hash,
-        new_value: hash,
-        performed_by: signerName,
-        performed_at: now,
-      });
-      signedCount += 1;
-    }
-
-    return {
-      signed_count: signedCount,
-      signature_hash: hash,
-      signed_at: now,
-      signed_by: signerName,
-      vaccination_ids: args.vaccination_ids,
-      message: `${signedCount} Impfeintrag/Einträge erfolgreich digital signiert.`,
     };
   },
 });
