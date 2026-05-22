@@ -2,6 +2,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+Set the Convex environment variable used by the image extraction action:
+
+```bash
+npx convex env set EXTRACTOR_BASE_URL https://your-extractor.example.com
+```
+
 First, run the development server:
 
 ```bash

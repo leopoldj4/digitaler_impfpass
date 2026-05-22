@@ -11,6 +11,10 @@ async function documentsForPatient(ctx: QueryCtx, patientId: Id<"patients">) {
   return await Promise.all(
     documents.map(async (document) => ({
       ...document,
+      extraction_status: document.extraction_status ?? "skipped",
+      extraction_result: document.extraction_result ?? null,
+      extraction_error: document.extraction_error ?? null,
+      extracted_at: document.extracted_at ?? null,
       url: await ctx.storage.getUrl(document.storage_id),
     }))
   );

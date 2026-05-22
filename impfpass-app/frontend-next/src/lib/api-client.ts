@@ -63,6 +63,10 @@ function mapDocument(document: ConvexDocument): VaccinationDocument {
     file_path: document.url ?? "",
     file_type: document.file_type,
     page_number: document.page_number,
+    extraction_status: document.extraction_status,
+    extraction_result: document.extraction_result,
+    extraction_error: document.extraction_error,
+    extracted_at: document.extracted_at,
     uploaded_at: document.uploaded_at,
     url: document.url ?? "",
   };
@@ -127,6 +131,8 @@ export const api = {
 
   documents: {
     upload: async (patientId: Id<"patients">, files: File[]): Promise<UploadResponse> => {
+      let extractedCount = 0;
+
       for (const file of files) {
         const uploadUrl = await convex.mutation(convexApi.documents.generateUploadUrl, {});
         const upload = await fetch(uploadUrl, {
@@ -140,18 +146,27 @@ export const api = {
         }
 
         const { storageId } = (await upload.json()) as { storageId: Id<"_storage"> };
-        await convex.mutation(convexApi.documents.registerUploadedDocument, {
+        const documentId = await convex.mutation(convexApi.documents.registerUploadedDocument, {
           patient_id: patientId,
           storage_id: storageId,
           file_name: file.name,
           file_type: file.type || "application/octet-stream",
           page_number: null,
         });
+
+        if (!file.type.startsWith("image/")) {
+          continue;
+        }
+
+        const { inserted_count } = await convex.action(convexApi.documents.processUploadedImage, {
+          document_id: documentId,
+        });
+        extractedCount += inserted_count;
       }
 
       return {
         documents: await api.documents.list(patientId),
-        extracted_count: 0,
+        extracted_count: extractedCount,
       };
     },
 
