@@ -1,5 +1,5 @@
 import type { PatientListItem, PatientDetail } from "@/types/patient";
-import type { Vaccination, VaccinationUpdate } from "@/types/vaccination";
+import type { SignVaccinationsResponse, Vaccination, VaccinationUpdate } from "@/types/vaccination";
 import type { VaccinationDocument } from "@/types/document";
 import {
   MOCK_PATIENTS,
@@ -90,6 +90,15 @@ export const api = {
         `/vaccinations/${id}/verify?performed_by=${encodeURIComponent(performedBy)}`,
         { method: "PATCH" }
       ),
+
+    sign: (vaccinationIds: number[], password: string): Promise<SignVaccinationsResponse> =>
+      apiFetch<SignVaccinationsResponse>("/vaccinations/sign", {
+        method: "POST",
+        body: JSON.stringify({
+          vaccination_ids: vaccinationIds,
+          password,
+        }),
+      }),
   },
 
   documents: {

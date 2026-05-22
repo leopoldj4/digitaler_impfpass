@@ -22,6 +22,10 @@ class VaccinationResponse(BaseModel):
     is_verified: bool
     verified_at: datetime | None
     verified_by: str | None
+    digital_signature_hash: str | None = None
+    digital_signature_payload: dict[str, Any] | None = None
+    digital_signed_at: datetime | None = None
+    digital_signed_by: str | None = None
     confidence_score: float | None
     needs_review: bool
     created_at: datetime
@@ -51,4 +55,22 @@ class VerifyResponse(BaseModel):
     is_verified: bool
     verified_at: datetime
     verified_by: str
+    message: str
+
+
+class SignVaccinationsRequest(BaseModel):
+    """Passwortbasierte digitale Signatur mehrerer Impfeinträge."""
+
+    vaccination_ids: list[int] = Field(..., min_length=1)
+    password: str = Field(..., min_length=1)
+
+
+class SignVaccinationsResponse(BaseModel):
+    """Antwort nach erfolgreicher digitaler Signatur."""
+
+    signed_count: int
+    signature_hash: str
+    signed_at: datetime
+    signed_by: str
+    vaccination_ids: list[int]
     message: str

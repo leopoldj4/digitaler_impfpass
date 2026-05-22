@@ -2,7 +2,7 @@ export { api } from "./api-client";
 
 import { api } from "./api-client";
 import type { PatientListItem, PatientDetail } from "@/types/patient";
-import type { Vaccination, VaccinationUpdate } from "@/types/vaccination";
+import type { SignVaccinationsResponse, Vaccination, VaccinationUpdate } from "@/types/vaccination";
 import type { UploadResponse } from "@/types/document";
 
 export const fetchPatients = (search?: string): Promise<PatientListItem[]> =>
@@ -19,6 +19,12 @@ export const updateVaccination = (
 
 export const verifyVaccination = (id: number, performedBy: string): Promise<unknown> =>
   api.vaccinations.verify(id, performedBy);
+
+export const signVaccinations = (
+  vaccinationIds: number[],
+  password: string,
+): Promise<SignVaccinationsResponse> =>
+  api.vaccinations.sign(vaccinationIds, password);
 
 export const uploadDocuments = (
   patientId: number,

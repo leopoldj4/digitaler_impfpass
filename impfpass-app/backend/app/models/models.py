@@ -54,6 +54,10 @@ class Vaccination(Base):
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     verified_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    digital_signature_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    digital_signature_payload: Mapped[dict[str, Any] | None] = mapped_column(JSON, nullable=True)
+    digital_signed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    digital_signed_by: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # OCR-Qualität
     confidence_score: Mapped[float | None] = mapped_column(Float, nullable=True)

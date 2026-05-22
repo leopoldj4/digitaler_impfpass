@@ -28,3 +28,16 @@ export function useVaccinationVerify(patientId: number) {
     onError: (e: Error) => toast.error(`Signierung fehlgeschlagen: ${e.message}`),
   });
 }
+
+export function useVaccinationSign(patientId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ vaccinationIds, password }: { vaccinationIds: number[]; password: string }) =>
+      api.vaccinations.sign(vaccinationIds, password),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.patients.detail(patientId) });
+      qc.invalidateQueries({ queryKey: queryKeys.patients.list() });
+    },
+    onError: (e: Error) => toast.error(`Signierung fehlgeschlagen: ${e.message}`),
+  });
+}

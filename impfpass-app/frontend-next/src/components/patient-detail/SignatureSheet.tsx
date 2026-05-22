@@ -15,12 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { useVaccinationVerify } from "@/hooks/useVaccinationMutations";
+import { useVaccinationSign } from "@/hooks/useVaccinationMutations";
 import type { Vaccination } from "@/types/vaccination";
 
-const DEMO_PIN = "1234";
-
-type Step = "pin" | "signing" | "done" | "error";
+type Step = "password" | "signing" | "done" | "error";
 
 interface SignatureSheetProps {
   open: boolean;
@@ -36,40 +34,46 @@ const variants = {
 };
 
 export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: SignatureSheetProps) {
-  const [pin, setPin] = useState("");
-  const [step, setStep] = useState<Step>("pin");
+  const [password, setPassword] = useState("");
+  const [step, setStep] = useState<Step>("password");
   const [errorMsg, setErrorMsg] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const { mutateAsync } = useVaccinationVerify(patientId);
+  const { mutateAsync } = useVaccinationSign(patientId);
 
   const unverified = vaccinations.filter((v) => !v.is_verified);
 
   useEffect(() => {
     if (open) {
-      setPin("");
-      setStep("pin");
+      setPassword("");
+      setStep("password");
       setErrorMsg("");
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [open]);
 
   async function handleSign() {
-    if (pin !== DEMO_PIN) {
-      setErrorMsg("Falscher PIN. Demo-PIN: 1234");
-      setPin("");
+    if (!password.trim()) {
+      setErrorMsg("Bitte geben Sie Ihr Arzt-Passwort ein.");
       inputRef.current?.focus();
+      return;
+    }
+    if (unverified.length === 0) {
+      setErrorMsg("Es gibt keine offenen Einträge zum Signieren.");
       return;
     }
     setStep("signing");
     setErrorMsg("");
     try {
-      await Promise.all(unverified.map((v) => mutateAsync(v.id)));
+      const response = await mutateAsync({
+        vaccinationIds: unverified.map((v) => v.id),
+        password,
+      });
       setStep("done");
-      toast.success(`${unverified.length} Impfungen erfolgreich digital signiert`);
+      toast.success(`${response.signed_count} Impfungen erfolgreich digital signiert`);
       setTimeout(() => onOpenChange(false), 1800);
-    } catch {
+    } catch (error) {
       setStep("error");
-      setErrorMsg("Signierung fehlgeschlagen. Bitte Backend prüfen.");
+      setErrorMsg(error instanceof Error ? error.message : "Signierung fehlgeschlagen.");
     }
   }
 
@@ -112,27 +116,25 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
 
           <div className="flex-1">
             <AnimatePresence mode="wait">
-              {step === "pin" && (
-                <motion.div key="pin" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
+              {step === "password" && (
+                <motion.div key="password" variants={variants} initial="enter" animate="center" exit="exit" transition={{ duration: 0.2 }} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="pin">Arzt-PIN eingeben</Label>
+                    <Label htmlFor="doctor-password">Arzt-Passwort bestätigen</Label>
                     <Input
-                      id="pin"
+                      id="doctor-password"
                       ref={inputRef}
                       type="password"
-                      inputMode="numeric"
-                      maxLength={6}
-                      placeholder="••••"
-                      value={pin}
-                      onChange={(e) => { setPin(e.target.value); setErrorMsg(""); }}
-                      onKeyDown={(e) => e.key === "Enter" && pin.length >= 4 && handleSign()}
-                      className="text-center text-xl tracking-[0.5em]"
+                      placeholder="Passwort"
+                      value={password}
+                      onChange={(e) => { setPassword(e.target.value); setErrorMsg(""); }}
+                      onKeyDown={(e) => e.key === "Enter" && password.length > 0 && handleSign()}
+                      className="h-10"
                     />
                     {errorMsg ? (
                       <p className="text-xs text-destructive">{errorMsg}</p>
                     ) : (
                       <p className="text-xs text-muted-foreground">
-                        Demo-PIN: <span className="font-mono font-medium">1234</span>
+                        Verwenden Sie dasselbe Passwort wie beim Login.
                       </p>
                     )}
                   </div>
@@ -140,7 +142,7 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
                     <Button variant="outline" className="flex-1" onClick={() => onOpenChange(false)}>
                       Abbrechen
                     </Button>
-                    <Button className="flex-1 gap-1.5" disabled={pin.length < 4} onClick={handleSign}>
+                    <Button className="flex-1 gap-1.5" disabled={!password.trim() || unverified.length === 0} onClick={handleSign}>
                       <ShieldCheck className="h-4 w-4" />
                       Signieren
                     </Button>
@@ -190,7 +192,7 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
                     <p className="font-medium text-destructive">Fehler aufgetreten</p>
                     <p className="text-sm text-muted-foreground mt-1">{errorMsg}</p>
                   </div>
-                  <Button variant="outline" onClick={() => setStep("pin")}>Erneut versuchen</Button>
+                  <Button variant="outline" onClick={() => setStep("password")}>Erneut versuchen</Button>
                 </motion.div>
               )}
             </AnimatePresence>

@@ -14,11 +14,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import { fetchPatient, verifyVaccination } from "@/lib/api";
+import { fetchPatient, signVaccinations } from "@/lib/api";
 import { useRouter } from "next/navigation";
 
-type Step = "review" | "consent" | "pin" | "success";
-const DEMO_PIN = "1234";
+type Step = "review" | "consent" | "password" | "success";
 
 export default function SignaturePage({ params }: { params: Promise<{ patientId: string }> }) {
   const { patientId } = use(params);
@@ -26,8 +25,8 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
   const queryClient = useQueryClient();
   const [step, setStep] = useState<Step>("review");
   const [consent, setConsent] = useState(false);
-  const [pin, setPin] = useState("");
-  const [pinError, setPinError] = useState("");
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [signing, setSigning] = useState(false);
 
   const { data: patient, isLoading } = useQuery({
@@ -37,12 +36,15 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
 
   const unverified = patient?.vaccinations.filter((v) => !v.is_verified) ?? [];
 
-  const handlePinSubmit = async () => {
-    if (pin !== DEMO_PIN) { setPinError("Falscher PIN. Demo: 1234"); setPin(""); return; }
-    setPinError("");
+  const handlePasswordSubmit = async () => {
+    if (!password.trim()) {
+      setPasswordError("Bitte geben Sie Ihr Arzt-Passwort ein.");
+      return;
+    }
+    setPasswordError("");
     setSigning(true);
     try {
-      await Promise.all(unverified.map((v) => verifyVaccination(v.id, "Dr. Mueller")));
+      await signVaccinations(unverified.map((v) => v.id), password);
       await queryClient.invalidateQueries({ queryKey: ["patient", patientId] });
       setStep("success");
     } catch (err) {
@@ -50,8 +52,8 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
     } finally { setSigning(false); }
   };
 
-  const stepIndex = { review: 0, consent: 1, pin: 2, success: 3 };
-  const stepConfig = [{ key: "review", label: "Prüfung" }, { key: "consent", label: "Zustimmung" }, { key: "pin", label: "PIN" }] as const;
+  const stepIndex = { review: 0, consent: 1, password: 2, success: 3 };
+  const stepConfig = [{ key: "review", label: "Prüfung" }, { key: "consent", label: "Zustimmung" }, { key: "password", label: "Passwort" }] as const;
 
   return (
     <div className="mx-auto max-w-xl space-y-6 p-6 lg:p-8">
@@ -123,8 +125,8 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setStep("review")}>Zurück</Button>
-                  <Button className="flex-1 gap-2" disabled={!consent} onClick={() => setStep("pin")}>
-                    <KeyRound className="h-4 w-4" />PIN eingeben
+                  <Button className="flex-1 gap-2" disabled={!consent} onClick={() => setStep("password")}>
+                    <KeyRound className="h-4 w-4" />Passwort eingeben
                   </Button>
                 </div>
               </CardContent>
@@ -132,22 +134,22 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
           </motion.div>
         )}
 
-        {step === "pin" && (
-          <motion.div key="pin" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
+        {step === "password" && (
+          <motion.div key="password" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
             <Card>
               <CardContent className="space-y-5 p-6">
                 <div className="flex flex-col items-center gap-2 text-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"><KeyRound className="h-6 w-6 text-primary" /></div>
-                  <p className="text-sm font-semibold">PIN eingeben</p>
-                  <p className="text-xs text-muted-foreground">Demo-PIN: 1234</p>
+                  <p className="text-sm font-semibold">Arzt-Passwort eingeben</p>
+                  <p className="text-xs text-muted-foreground">Verwenden Sie dasselbe Passwort wie beim Login.</p>
                 </div>
                 <div className="space-y-2">
-                  <Input type="password" inputMode="numeric" maxLength={4} placeholder="● ● ● ●" value={pin} onChange={(e) => { setPin(e.target.value); setPinError(""); }} className="text-center text-xl tracking-[0.5em]" autoFocus onKeyDown={(e) => e.key === "Enter" && pin.length === 4 && handlePinSubmit()} />
-                  {pinError && <p className="text-xs text-destructive text-center">{pinError}</p>}
+                  <Input type="password" placeholder="Passwort" value={password} onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }} autoFocus onKeyDown={(e) => e.key === "Enter" && password.length > 0 && handlePasswordSubmit()} />
+                  {passwordError && <p className="text-xs text-destructive text-center">{passwordError}</p>}
                 </div>
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1" onClick={() => setStep("consent")}>Zurück</Button>
-                  <Button className="flex-1" disabled={pin.length !== 4 || signing} onClick={handlePinSubmit}>{signing ? "Signiere …" : "Jetzt signieren"}</Button>
+                  <Button className="flex-1" disabled={!password.trim() || signing} onClick={handlePasswordSubmit}>{signing ? "Signiere …" : "Jetzt signieren"}</Button>
                 </div>
               </CardContent>
             </Card>
