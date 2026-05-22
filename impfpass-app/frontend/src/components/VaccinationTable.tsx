@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { authFetch } from "@/lib/auth";
 import type { Vaccination, VaccinationUpdate } from "@/types/vaccination";
 
 const PERFORMED_BY = "Dr. Demo";
@@ -60,7 +61,7 @@ function EditableRow({ vaccination: v, onUpdate }: { vaccination: Vaccination; o
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch(
+      const res = await authFetch(
         `/api/v1/vaccinations/${v.id}?performed_by=${encodeURIComponent(PERFORMED_BY)}`,
         { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(draft) }
       );

@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Loader2, Camera } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { authFetch } from "@/lib/auth";
 import type { VaccinationDocument } from "@/types/document";
 
 interface UploadResponse {
@@ -28,7 +29,7 @@ export default function DocumentUpload({ patientId, onUploaded }: Props) {
     Array.from(files).forEach((f) => form.append("files", f));
 
     try {
-      const res = await fetch("/api/v1/documents/upload", { method: "POST", body: form });
+      const res = await authFetch("/api/v1/documents/upload", { method: "POST", body: form });
       if (!res.ok) {
         const d = await res.json().catch(() => ({}));
         throw new Error(d?.detail ?? `Fehler ${res.status}`);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCheck, Calendar, Syringe, AlertTriangle, ShieldCheck, Info, Sparkles } from "lucide-react";
+import { CheckCheck, Calendar, Syringe, AlertTriangle, ShieldCheck, Info, Sparkles, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -10,11 +10,12 @@ import VaccinationTable from "@/components/VaccinationTable";
 import DocumentUpload from "@/components/DocumentUpload";
 import DocumentGallery from "@/components/DocumentGallery";
 import SignatureDialog from "@/components/SignatureDialog";
+import { authFetch, type AuthUser } from "@/lib/auth";
 import type { PatientDetail } from "@/types/patient";
 import type { VaccinationDocument } from "@/types/document";
 
 async function fetchPatient(id: number): Promise<PatientDetail> {
-  const res = await fetch(`/api/v1/patients/${id}`);
+  const res = await authFetch(`/api/v1/patients/${id}`);
   if (!res.ok) throw new Error("Patient nicht gefunden");
   return res.json();
 }
@@ -37,7 +38,12 @@ function StatCard({ icon: Icon, label, value, color = "text-foreground" }: {
   );
 }
 
-export default function Dashboard() {
+interface DashboardProps {
+  authUser: AuthUser;
+  onLogout: () => void;
+}
+
+export default function Dashboard({ authUser, onLogout }: DashboardProps) {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [signOpen, setSignOpen] = useState(false);
   const [extractedNotice, setExtractedNotice] = useState<number | null>(null);
@@ -79,6 +85,14 @@ export default function Dashboard() {
       <PatientSidebar selectedId={selectedId} onSelect={setSelectedId} />
 
       <main className="flex-1 overflow-y-auto">
+        <div className="sticky top-0 z-20 flex h-12 items-center justify-end gap-3 border-b bg-background/95 px-6 backdrop-blur">
+          <span className="text-xs text-muted-foreground">{authUser.full_name}</span>
+          <Button variant="outline" size="sm" className="gap-2" onClick={onLogout}>
+            <LogOut className="h-3.5 w-3.5" />
+            Abmelden
+          </Button>
+        </div>
+
         {/* Leerzustand */}
         {!selectedId && (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center">

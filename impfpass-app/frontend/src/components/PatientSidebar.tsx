@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { authFetch } from "@/lib/auth";
 import type { PatientListItem } from "@/types/patient";
 
 interface Props {
@@ -14,7 +15,7 @@ interface Props {
 
 async function fetchPatients(search: string): Promise<PatientListItem[]> {
   const params = search ? `?search=${encodeURIComponent(search)}` : "";
-  const res = await fetch(`/api/v1/patients${params}`);
+  const res = await authFetch(`/api/v1/patients${params}`);
   if (!res.ok) throw new Error("Fehler beim Laden");
   return res.json();
 }

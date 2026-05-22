@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ShieldCheck, Loader2, CheckCircle2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { authFetch } from "@/lib/auth";
 import type { Vaccination } from "@/types/vaccination";
 
 // Demo-PIN – echter Signatur-Flow wird vom Kollegen implementiert
@@ -48,7 +49,7 @@ export default function SignatureDialog({ open, onClose, vaccinations, onSuccess
     try {
       await Promise.all(
         unverified.map((v) =>
-          fetch(`/api/v1/vaccinations/${v.id}/verify?performed_by=Dr.+Demo`, {
+          authFetch(`/api/v1/vaccinations/${v.id}/verify?performed_by=Dr.+Demo`, {
             method: "PATCH",
           })
         )

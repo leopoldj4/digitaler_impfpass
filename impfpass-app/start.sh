@@ -18,7 +18,15 @@ echo "==> 3/4 Datenbank-Migrationen ausführen..."
 
 echo "==> 4/5 Frontend-Dependencies installieren..."
 cd "$ROOT/frontend"
-[ ! -d node_modules ] && npm install
+if command -v npm >/dev/null 2>&1; then
+  FRONTEND_PM_INSTALL="npm install"
+  FRONTEND_PM_DEV="npm run dev"
+else
+  corepack prepare pnpm@9.15.9 --activate
+  FRONTEND_PM_INSTALL="corepack pnpm install"
+  FRONTEND_PM_DEV="corepack pnpm dev"
+fi
+[ ! -d node_modules ] && $FRONTEND_PM_INSTALL
 
 echo "==> 5/5 Backend + Frontend starten..."
 cd "$ROOT/backend"
@@ -26,7 +34,7 @@ cd "$ROOT/backend"
 BACKEND_PID=$!
 
 cd "$ROOT/frontend"
-npm run dev &
+$FRONTEND_PM_DEV &
 FRONTEND_PID=$!
 
 echo ""

@@ -2,10 +2,12 @@
 
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
+from app.auth import get_current_user
+from app.routes.auth_route import router as auth_router
 from app.routes.document_route import router as document_router
 from app.routes.import_route import router as import_router
 from app.routes.patient_route import router as patient_router
@@ -23,7 +25,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -32,10 +34,12 @@ app.add_middleware(
 # Scan-Fotos statisch ausliefern: GET /uploads/{patient_id}/{dateiname}
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_ROOT)), name="uploads")
 
-app.include_router(import_router)
-app.include_router(patient_router)
-app.include_router(vaccination_router)
-app.include_router(document_router)
+app.include_router(auth_router)
+protected_api = [Depends(get_current_user)]
+app.include_router(import_router, dependencies=protected_api)
+app.include_router(patient_router, dependencies=protected_api)
+app.include_router(vaccination_router, dependencies=protected_api)
+app.include_router(document_router, dependencies=protected_api)
 
 
 @app.get("/health")
