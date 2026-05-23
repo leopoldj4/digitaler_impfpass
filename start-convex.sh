@@ -25,4 +25,7 @@ echo ""
 echo "To stop Convex, press Ctrl+C"
 echo ""
 
+# Data acquisition service (running in Docker) is reachable at localhost:8000 on the host.
+export EXTRACTOR_BASE_URL=http://localhost:8000
+
 npm run convex-dev

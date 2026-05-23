@@ -28,9 +28,15 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Convex local dev runs on the HOST at port 3210. All Convex calls are
+      # browser-side (every component is "use client"), so the browser reaches
+      # localhost:3210 directly — no container-to-host routing needed here.
+      # Do NOT use host.docker.internal here: the browser cannot resolve that
+      # hostname, which causes CORS/connection errors on the upload storage URLs.
       NEXT_PUBLIC_CONVEX_URL: http://localhost:3210
       NEXT_PUBLIC_CONVEX_SITE_URL: http://localhost:3211
-      DATA_ACQUISITION_API: http://data-acquisition:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./impfpass-app/frontend-next:/app
       - /app/node_modules
