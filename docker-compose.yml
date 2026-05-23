@@ -28,7 +28,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      NEXT_PUBLIC_CONVEX_URL=http://localhost:3210
+      NEXT_PUBLIC_CONVEX_URL: http://localhost:3210
       NEXT_PUBLIC_CONVEX_SITE_URL: http://localhost:3211
       DATA_ACQUISITION_API: http://data-acquisition:8000
     volumes:
