@@ -91,7 +91,7 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
             <Link href={`/patients/${patientId}`}><ArrowLeft className="h-4 w-4" /></Link>
           </Button>
           <div>
-            <p className="text-sm font-semibold">{isLoading ? <Skeleton className="h-4 w-32" /> : `${patient?.last_name}, ${patient?.first_name}`}</p>
+            <span className="text-sm font-semibold">{isLoading ? <Skeleton className="h-4 w-32 inline-block" /> : `${patient?.last_name}, ${patient?.first_name}`}</span>
             <p className="text-xs text-muted-foreground">KI Review — Daten prüfen</p>
           </div>
         </div>
