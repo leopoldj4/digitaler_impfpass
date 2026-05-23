@@ -92,6 +92,54 @@ export const update = mutation({
   },
 });
 
+export const signBulk = mutation({
+  args: {
+    vaccination_ids: v.array(v.id("vaccinations")),
+    signed_by: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const now = new Date().toISOString();
+    const signatureHash = `sig-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    let signedCount = 0;
+
+    for (const id of args.vaccination_ids) {
+      const vaccination = await ctx.db.get(id);
+      if (!vaccination) continue;
+
+      await ctx.db.patch(id, {
+        is_verified: true,
+        verified_at: now,
+        verified_by: args.signed_by,
+        digital_signature_hash: signatureHash,
+        digital_signature_payload: { signed_at: now, signed_by: args.signed_by },
+        digital_signed_at: now,
+        digital_signed_by: args.signed_by,
+        needs_review: false,
+        updated_at: now,
+      });
+
+      await ctx.db.insert("audit_log", {
+        patient_id: vaccination.patient_id,
+        action: "VERIFY",
+        field_changed: "is_verified",
+        old_value: "false",
+        new_value: "true",
+        performed_by: args.signed_by,
+        performed_at: now,
+      });
+
+      signedCount++;
+    }
+
+    return {
+      signed_count: signedCount,
+      signature_hash: signatureHash,
+      signed_at: now,
+      signed_by: args.signed_by,
+    };
+  },
+});
+
 export const verify = mutation({
   args: {
     id: v.id("vaccinations"),

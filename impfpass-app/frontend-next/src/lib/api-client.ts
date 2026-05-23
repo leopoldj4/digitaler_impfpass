@@ -122,15 +122,14 @@ export const api = {
       convex.mutation(convexApi.vaccinations.create, { patient_id: patientId, ...data }),
 
     sign: async (vaccinationIds: Id<"vaccinations">[]): Promise<SignVaccinationsResponse> => {
-      const signedAt = new Date().toISOString();
-
-      return {
-        signed_count: vaccinationIds.length,
-        signature_hash: `mock-${signedAt}`,
-        signed_at: signedAt,
-        signed_by: "Dr. Demo",
+      const result = await convex.mutation(convexApi.vaccinations.signBulk, {
         vaccination_ids: vaccinationIds,
-        message: `${vaccinationIds.length} Impfeintrag/Einträge als Mock signiert.`,
+        signed_by: "Dr. Meier",
+      });
+      return {
+        ...result,
+        vaccination_ids: vaccinationIds,
+        message: `${result.signed_count} Impfeinträge erfolgreich signiert.`,
       };
     },
   },

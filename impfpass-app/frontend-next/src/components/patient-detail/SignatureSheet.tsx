@@ -35,6 +35,7 @@ const variants = {
 export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: SignatureSheetProps) {
   const [step, setStep] = useState<Step>("ready");
   const [errorMsg, setErrorMsg] = useState("");
+  const [signedCount, setSignedCount] = useState(0);
   const { mutateAsync } = useVaccinationSign(patientId);
 
   const unverified = vaccinations.filter((v) => !v.is_verified);
@@ -53,10 +54,12 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
     }
     setStep("signing");
     setErrorMsg("");
+    const count = unverified.length;
     try {
       const response = await mutateAsync(unverified.map((v) => v.id));
+      setSignedCount(response.signed_count ?? count);
       setStep("done");
-      toast.success(`${response.signed_count} Impfungen erfolgreich digital signiert`);
+      toast.success(`${response.signed_count ?? count} Impfungen erfolgreich digital signiert`);
       setTimeout(() => onOpenChange(false), 1800);
     } catch (error) {
       setStep("error");
@@ -145,7 +148,7 @@ export function SignatureSheet({ open, onOpenChange, vaccinations, patientId }: 
                   <div className="text-center">
                     <p className="font-semibold text-emerald-700">Erfolgreich signiert!</p>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {unverified.length} Einträge wurden verifiziert
+                      {signedCount} Einträge wurden verifiziert
                     </p>
                   </div>
                 </motion.div>
