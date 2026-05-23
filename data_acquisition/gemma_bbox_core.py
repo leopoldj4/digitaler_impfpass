@@ -17,14 +17,13 @@ from dotenv import dotenv_values
 from PIL import Image, ImageDraw
 from whoosh import index
 from whoosh.fields import ID, TEXT, Schema
-from whoosh.qparser import QueryParser
+from whoosh.qparser import MultifieldParser, QueryParser
 
-STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen und gebe die Bounding Boxes sowie die Daten und Namen der Impfungen zurück. Die Bounding-Boxes sollen die GESAMTE SPALTE der Dokumentation enthalten. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (19.11.1995, 11.09.2011, etc.) angegeben werden! Die Namen der Impfstoffe sollen ohne Chargennummer angegeben werden. At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
+STEP1_PROMPT = """Lese den Impfpass, auf dem Impfpass sind möglicherweise mehrere Impfungen dokumentiert. Jede Impfung ist mit folgenden Elementen tabellarisch dokumentiert: Unterschrift, Stempel, Datum, ggf. Sticker. Finde ALLE Impfungen. Als Namen darfst du irgendeinen Hinweis auf den Impftyp geben (manchmal ist es handschriftlich notiert, manchmal steht es auf dem Sticker, manchmal ist es eine Tabelle mit Kreuzen). Sofern die geimpften Krankheiten mit Kreuzen markiert sind sollen dieses im diseases array der Ausgabe gespeichert werden, ansonsten bleibt dieser leer. Zum Beispiel (HiB, Diphterie, ... oder Repevax). Wenn der Name nicht genau richtig ist, ist das nicht schlimm. Das Datum soll immer mit vollem Jahr (19.11.1995, 11.09.2011, etc.) angegeben werden! Die Namen der Impfstoffe sollen ohne Chargennummer angegeben werden. At the very start of the evaluation the following should be considered: If the image is skewed, fuzzy, unclear, rotated, or otherwise deviating from a clear upright view of the passport, it should be marked as unrecognizable. For this simply return a JSON with {"error": "Image content unrecognizable"}"""
 
 STEP1_SCHEMA_HINT = {
     "vaccinations": [
         {
-            "box_2d": [100, 200, 300, 400],
             "name": "Beispiel Impfstoff",
             "date": "01.01.2024",
             "diseases": []
@@ -169,9 +168,21 @@ def load_vaccination_records(db_json_path: Path) -> list[dict[str, str]]:
             continue
         record_id = str(item.get("id", "")).strip()
         name = str(item.get("name", "")).strip()
-        diseases = _normalize_diseases_text(item.get("diseases", ""))
+        brand = str(item.get("brand", "") or "").strip()
+        diseases_raw = item.get("diseases", [])
+        diseases_list: list[str] = (
+            [str(d).strip() for d in diseases_raw if d]
+            if isinstance(diseases_raw, list) else []
+        )
+        diseases_str = str(diseases_raw).strip()
         if record_id and name:
-            records.append({"id": record_id, "name": name, "diseases": diseases})
+            records.append({
+                "id": record_id,
+                "name": name,
+                "brand": brand,
+                "diseases": diseases_str,        # string for Whoosh / substring checks
+                "diseases_list": diseases_list,  # list for F1 scoring
+            })
 
     if not records:
         raise RuntimeError("No valid records found in vaccination DB JSON")
@@ -184,18 +195,18 @@ def rebuild_whoosh_index(records: list[dict[str, str]], whoosh_dir: Path) -> Non
         shutil.rmtree(whoosh_dir)
     whoosh_dir.mkdir(parents=True, exist_ok=True)
 
-    schema = Schema(id=ID(stored=True, unique=True), name=TEXT(stored=True), diseases=TEXT(stored=True))
+    schema = Schema(id=ID(stored=True, unique=True), name=TEXT(stored=True), brand=TEXT(stored=True), diseases=TEXT(stored=True))
     idx = index.create_in(str(whoosh_dir), schema)
 
     writer = idx.writer()
     for rec in records:
-        writer.add_document(id=rec["id"], name=rec["name"], diseases=rec["diseases"])
+        writer.add_document(id=rec["id"], name=rec["name"], brand=rec.get("brand", ""), diseases=rec["diseases"])
     writer.commit()
 
 
 def whoosh_search(whoosh_dir: Path, query: str, limit: int = 5) -> list[dict[str, str]]:
     idx = index.open_dir(str(whoosh_dir))
-    parser = QueryParser("name", schema=idx.schema)
+    parser = MultifieldParser(["name", "brand"], schema=idx.schema)
     parsed_query = parser.parse(query)
 
     with idx.searcher() as searcher:
@@ -204,6 +215,7 @@ def whoosh_search(whoosh_dir: Path, query: str, limit: int = 5) -> list[dict[str
             {
                 "id": str(hit.get("id", "")),
                 "name": str(hit.get("name", "")),
+                "brand": str(hit.get("brand", "")),
                 "diseases": str(hit.get("diseases", "")),
             }
             for hit in results
@@ -318,7 +330,7 @@ def validate_step1_data(data: dict[str, Any]) -> dict[str, Any]:
     for item in data["vaccinations"]:
         if not isinstance(item, dict):
             raise RuntimeError(f"Step 1: invalid vaccination item: {item}")
-        validate_box_2d(item.get("box_2d"))
+        # validate_box_2d(item.get("box_2d"))
         if not isinstance(item.get("name"), str):
             raise RuntimeError("Step 1: vaccination.name must be string")
         if not isinstance(item.get("date"), str):
@@ -407,7 +419,8 @@ async def query_step1(
     return parse_step1_response(message)
 
 
-MIN_FUZZY_NAME_SCORE = 30
+_EXACT_TOKEN_BONUS = 40
+_DISEASE_SCORE_WEIGHT = 60.0
 
 _QUERY_NOISE_WORDS = frozenset({
     "impfung", "impfstoff", "vaccination", "vaccine", "vaccin",
@@ -432,13 +445,49 @@ def _disease_coverage(candidate: dict[str, str], detected: list[str]) -> int:
 _EXACT_TOKEN_BONUS = 40  # added per query token found verbatim in the candidate name
 
 
-def _exact_token_bonus(query: str, candidate_name: str) -> float:
-    # Split on all non-alphanumeric characters (spaces, hyphens, slashes, …) so
-    # "FSME-Immun" and "FSME Immun" both produce {"fsme", "immun"}.
+def _exact_token_bonus(query: str, candidate_name: str, candidate_brand: str = "") -> float:
+    # Split on all non-alphanumeric characters so "FSME-Immun" → {"fsme", "immun"}.
     query_tokens = {t for t in re.split(r"\W+", query.lower()) if t}
     name_tokens = {t for t in re.split(r"\W+", candidate_name.lower()) if t}
-    matched = len(query_tokens & name_tokens)
+    brand_tokens = {t for t in re.split(r"\W+", candidate_brand.lower()) if t} if candidate_brand else set()
+    matched = len(query_tokens & (name_tokens | brand_tokens))
     return matched * _EXACT_TOKEN_BONUS
+
+def _disease_f1(candidate_diseases_list: list[str], detected: list[str]) -> float:
+    """F1 between detected diseases and a candidate's disease list.
+    Precision = matched/candidate_count (penalises excess diseases on candidate).
+    Recall    = matched/detected_count  (penalises missing diseases on candidate)."""
+    if not detected or not candidate_diseases_list:
+        return 0.0
+    candidate_combined = " ".join(candidate_diseases_list).lower()
+    matches = sum(1 for d in detected if d.lower() in candidate_combined)
+    precision = matches / len(candidate_diseases_list)
+    recall = matches / len(detected)
+    denom = precision + recall
+    return (2 * precision * recall / denom) if denom else 0.0
+
+
+def _name_brand_score(query: str, rec: dict[str, Any]) -> float:
+    """Max of token_set_ratio against name and brand."""
+    q = query.lower()
+    try:
+        from rapidfuzz import fuzz
+        ns = float(fuzz.token_set_ratio(q, rec["name"].lower()))
+        bs = float(fuzz.token_set_ratio(q, rec["brand"].lower())) if rec.get("brand") else 0.0
+    except ImportError:
+        import difflib
+        ns = difflib.SequenceMatcher(None, q, rec["name"].lower()).ratio() * 100
+        bs = difflib.SequenceMatcher(None, q, rec["brand"].lower()).ratio() * 100 if rec.get("brand") else 0.0
+    return max(ns, bs)
+
+
+def _full_score(query: str, rec: dict[str, Any], detected_diseases: list[str]) -> float:
+    """name/brand similarity + exact token bonus + disease F1 * weight."""
+    name_brand = _name_brand_score(query, rec)
+    bonus = _exact_token_bonus(query, rec["name"], rec.get("brand", ""))
+    disease = _disease_f1(rec.get("diseases_list", []), detected_diseases) * _DISEASE_SCORE_WEIGHT
+    return name_brand + bonus + disease
+
 
 def _fuzzy_search(
     records: list[dict[str, str]],
@@ -446,33 +495,18 @@ def _fuzzy_search(
     limit: int = 5,
     detected_diseases: list[str] | None = None,
 ) -> list[dict[str, str]]:
-    """Gate logic:
-    - With detected diseases: name score >= MIN_FUZZY_NAME_SCORE AND disease overlap > 0.
-    - Without detected diseases: name score >= MIN_FUZZY_NAME_SCORE only.
-    Candidates failing their gate are rejected. Survivors are ranked by fuzzy name
-    score plus a bonus for each query token that appears verbatim in the candidate name."""
-    q = query.lower()
-    try:
-        from rapidfuzz import fuzz
-        def _name_score(rec: dict[str, str]) -> float:
-            return float(fuzz.token_set_ratio(q, rec["name"].lower()))
-    except ImportError:
-        import difflib
-        def _name_score(rec: dict[str, str]) -> float:  # type: ignore[misc]
-            return difflib.SequenceMatcher(None, q, rec["name"].lower()).ratio() * 100
-
+    """Gate: name/brand score >= MIN_FUZZY_NAME_SCORE.
+    When diseases are known, also requires disease overlap > 0.
+    Survivors ranked by full score (name_brand + token bonus + disease F1)."""
+    dd = detected_diseases or []
     accepted: list[tuple[dict[str, str], float]] = []
     for rec in records:
-        ns = _name_score(rec)
-        name_ok = ns >= MIN_FUZZY_NAME_SCORE
-        if detected_diseases:
-            passes = name_ok and _disease_coverage(rec, detected_diseases) > 0
-        else:
-            passes = name_ok
-        if passes:
-            bonus = _exact_token_bonus(query, rec["name"])
-            accepted.append((rec, ns + bonus))
-
+        nb = _name_brand_score(query, rec)
+        if nb < MIN_FUZZY_NAME_SCORE:
+            continue
+        if dd and _disease_coverage(rec, dd) == 0:
+            continue
+        accepted.append((rec, _full_score(query, rec, dd)))
     accepted.sort(key=lambda x: x[1], reverse=True)
     return [rec for rec, _ in accepted[:limit]]
 
@@ -482,6 +516,9 @@ def assign_from_guesses(
     records: list[dict[str, str]],
     debug: bool = False,
 ) -> dict[str, Any]:
+    # Whoosh results carry only {id, name, brand, diseases} — no diseases_list.
+    # Build a lookup so we can enrich them with diseases_list for F1 scoring.
+    records_by_id = {r["id"]: r for r in records}
     vaccinations = []
     for guess in guesses:
         date = guess.get("date", "")
@@ -500,10 +537,16 @@ def assign_from_guesses(
             candidates = _fuzzy_search(records, _clean_query(name), detected_diseases=diseases or None)
             debug_print(debug, f"step2 fuzzy fallback for '{name}'", candidates)
 
-        # Among surviving candidates, prefer highest disease coverage.
-        if len(candidates) > 1 and diseases:
-            candidates = sorted(candidates, key=lambda c: _disease_coverage(c, diseases), reverse=True)
-            debug_print(debug, f"step2 disease-reranked for '{name}'", candidates)
+        # Among surviving candidates, rank by full score (name + token bonus + disease F1).
+        # Enrich Whoosh results with diseases_list from the full records dict.
+        if len(candidates) > 1:
+            q = _clean_query(name)
+            candidates = sorted(
+                candidates,
+                key=lambda c: _full_score(q, records_by_id.get(c["id"], c), diseases),
+                reverse=True,
+            )
+            debug_print(debug, f"step2 reranked for '{name}'", candidates)
 
         entry: dict[str, Any] = {"id": str(candidates[0]["id"]) if candidates else "unbekannt", "date": date}
         if diseases:
