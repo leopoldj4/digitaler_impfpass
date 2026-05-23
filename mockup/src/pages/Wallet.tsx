@@ -102,7 +102,7 @@ function WalletCard() {
             </div>
             <div>
               <p className="text-white/40 text-[9px] uppercase tracking-widest font-medium mb-1">Letzte Impfung</p>
-              <p className="text-white font-bold text-sm leading-tight">12. Mär.<br />2025</p>
+              <p className="text-white font-bold text-sm leading-tight">12. Mär.<br />2026</p>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ function WalletCard() {
           <div className="bg-white rounded-2xl p-2.5 shadow-lg">
             <QRCode size={90} />
           </div>
-          <p className="text-white/25 text-[9px] font-mono tracking-widest">VC-2025-MM-001847</p>
+          <p className="text-white/25 text-[9px] font-mono tracking-widest">VC-2026-MM-001847</p>
         </div>
       </div>
     </div>

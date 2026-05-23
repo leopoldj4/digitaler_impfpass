@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Building2, CheckCircle2, CalendarDays, Clock, ChevronRight } from 'lucide-react'
+import { ArrowLeft, Building2, CheckCircle2, CalendarDays, Clock, ChevronRight, Home } from 'lucide-react'
 
 const practices = [
   { id: 'p1', name: 'Dr. med. Klaus Müller', specialty: 'Allgemeinmedizin', city: 'München-Maxvorstadt', connected: true },
@@ -50,7 +50,7 @@ export default function Termin() {
             </div>
             <div className="flex items-center gap-3">
               <CalendarDays className="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden />
-              <span className="text-slate-800 text-sm">Di, 03.06.2025</span>
+              <span className="text-slate-800 text-sm">Di, 03.06.2026</span>
             </div>
             <div className="flex items-center gap-3">
               <Clock className="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden />
@@ -63,11 +63,11 @@ export default function Termin() {
           </p>
 
           <button
-            onClick={() => navigate('/overview')}
+            onClick={() => navigate('/')}
             className="btn-primary w-full flex items-center justify-center gap-2 mt-4"
           >
-            Zurück zur Übersicht
-            <ChevronRight className="w-4 h-4" aria-hidden />
+            <Home className="w-4 h-4" aria-hidden />
+            Zur Startseite
           </button>
         </div>
       </div>
@@ -104,7 +104,7 @@ export default function Termin() {
               </div>
               <div className="flex items-center gap-3">
                 <CalendarDays className="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden />
-                <p className="text-slate-900 text-sm">Di, 03.06.2025</p>
+                <p className="text-slate-900 text-sm">Di, 03.06.2026</p>
               </div>
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-slate-400 flex-shrink-0" aria-hidden />
@@ -113,7 +113,7 @@ export default function Termin() {
             </div>
             <div className="border-t border-slate-100 pt-3">
               <p className="text-slate-500 text-xs">Grund</p>
-              <p className="text-slate-900 text-sm mt-1 font-medium">FSME-Auffrischung (fällig Jul 2025)</p>
+              <p className="text-slate-900 text-sm mt-1 font-medium">FSME-Auffrischung (fällig Jul 2026)</p>
             </div>
           </div>
 
@@ -150,37 +150,37 @@ export default function Termin() {
         </button>
         <div>
           <h1 className="text-slate-900 font-bold text-lg leading-tight">Termin vereinbaren</h1>
-          <p className="text-slate-500 text-xs">FSME-Auffrischung · fällig Jul 2025</p>
+          <p className="text-slate-500 text-xs">FSME-Auffrischung · fällig Jul 2026</p>
         </div>
       </div>
 
       {/* Urgency */}
-      <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-200 mb-5">
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 border border-amber-200 mb-3">
         <div className="w-2 h-2 bg-amber-500 rounded-full flex-shrink-0" />
         <p className="text-amber-800 text-xs">Ihr Schutz läuft in <span className="font-semibold">6 Wochen</span> aus</p>
       </div>
 
       {/* Step 1: Practice */}
-      <section className="mb-5" aria-labelledby="practice-heading">
-        <h2 id="practice-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-3 px-1">
+      <section className="mb-3" aria-labelledby="practice-heading">
+        <h2 id="practice-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2 px-1">
           1 · Praxis wählen
         </h2>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-1.5">
           {practices.map(p => (
             <button
               key={p.id}
               onClick={() => setPractice(p.id)}
-              className={`flex items-center gap-3 p-4 rounded-2xl text-left transition-all cursor-pointer active:scale-[0.98]
+              className={`flex items-center gap-3 p-3 rounded-xl text-left transition-all cursor-pointer active:scale-[0.98]
                 ${practice === p.id
                   ? 'bg-blue-50 border border-blue-300 shadow-sm'
                   : 'card'
                 }`}
               aria-pressed={practice === p.id}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 border
                 ${practice === p.id ? 'bg-blue-100 border-blue-200' : 'bg-slate-100 border-slate-200'}`}
               >
-                <Building2 className={`w-5 h-5 ${practice === p.id ? 'text-blue-600' : 'text-slate-500'}`} aria-hidden />
+                <Building2 className={`w-4 h-4 ${practice === p.id ? 'text-blue-600' : 'text-slate-500'}`} aria-hidden />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -202,9 +202,9 @@ export default function Termin() {
       </section>
 
       {/* Step 2: Date */}
-      <section className="mb-5" aria-labelledby="date-heading">
-        <h2 id="date-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-3 px-1">
-          2 · Datum wählen <span className="normal-case">(Jun 2025)</span>
+      <section className="mb-3" aria-labelledby="date-heading">
+        <h2 id="date-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2 px-1">
+          2 · Datum wählen <span className="normal-case">(Jun 2026)</span>
         </h2>
         <div className="flex gap-2">
           {dates.map(d => (
@@ -213,7 +213,7 @@ export default function Termin() {
               onClick={() => d.available && setSelectedDate(d.label)}
               disabled={!d.available}
               aria-pressed={selectedDate === d.label}
-              className={`flex-1 flex flex-col items-center gap-1 py-3 rounded-xl transition-all
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 rounded-xl transition-all
                 ${!d.available ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer active:scale-95'}
                 ${selectedDate === d.label
                   ? 'bg-blue-600 shadow-sm'
@@ -232,17 +232,17 @@ export default function Termin() {
       </section>
 
       {/* Step 3: Time */}
-      <section className="mb-6" aria-labelledby="time-heading">
-        <h2 id="time-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-3 px-1">
+      <section className="mb-4" aria-labelledby="time-heading">
+        <h2 id="time-heading" className="text-slate-500 text-xs uppercase tracking-wider font-medium mb-2 px-1">
           3 · Uhrzeit wählen
         </h2>
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-4 gap-1.5">
           {times.map(t => (
             <button
               key={t}
               onClick={() => setSelectedTime(t)}
               aria-pressed={selectedTime === t}
-              className={`py-3 rounded-xl text-sm font-medium transition-all cursor-pointer active:scale-95
+              className={`py-2 rounded-xl text-sm font-medium transition-all cursor-pointer active:scale-95
                 ${selectedTime === t
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'bg-white border border-slate-200 text-slate-700 shadow-sm'
