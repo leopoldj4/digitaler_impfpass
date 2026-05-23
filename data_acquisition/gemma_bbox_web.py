@@ -19,7 +19,7 @@ class ErrorResponse(BaseModel):
 class ExtractionItem(BaseModel):
     id: str
     date: str
-    bounding_box: list[int] = Field(min_length=4, max_length=4)
+    bounding_box: list[float] = Field(min_length=4, max_length=4)
     diseases: list[str] = Field(default_factory=list)
 
 
