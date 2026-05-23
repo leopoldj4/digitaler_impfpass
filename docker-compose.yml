@@ -1,5 +1,100 @@
 services:
-  # Data Acquisition Service (LLM-based text extraction from vaccine passport images)
+
+  # ── Convex self-hosted backend ─────────────────────────────────────────────
+  # Stores all state in a local SQLite DB inside the convex_data volume.
+  # CONVEX_CLOUD_ORIGIN / CONVEX_SITE_ORIGIN tell the backend what URL it is
+  # reachable at *from the browser*, so storage upload URLs are correct.
+  convex-backend:
+    image: ghcr.io/get-convex/convex-backend:latest
+    container_name: impfpass-convex
+    ports:
+      - "3210:3210"   # Convex API  (NEXT_PUBLIC_CONVEX_URL)
+      - "3211:3211"   # HTTP actions (NEXT_PUBLIC_CONVEX_SITE_URL)
+    environment:
+      INSTANCE_NAME: ${INSTANCE_NAME:-impfpass}
+      INSTANCE_SECRET: "${INSTANCE_SECRET:?INSTANCE_SECRET must be set in .env (run: openssl rand -hex 32)}"
+      # External URLs – must match what the browser uses to reach this container.
+      CONVEX_CLOUD_ORIGIN: http://localhost:3210
+      CONVEX_SITE_ORIGIN: http://localhost:3211
+      DO_NOT_REQUIRE_SSL: "1"
+      RUST_LOG: warn
+    volumes:
+      - convex_data:/convex/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:3210/version > /dev/null"]
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 20
+    restart: unless-stopped
+    networks:
+      - impfpass-network
+
+  # ── Convex dashboard ──────────────────────────────────────────────────────
+  convex-dashboard:
+    image: ghcr.io/get-convex/convex-dashboard:latest
+    container_name: impfpass-convex-dashboard
+    ports:
+      - "6791:6791"
+    environment:
+      # Browser-facing URL of the backend API.
+      NEXT_PUBLIC_DEPLOYMENT_URL: http://localhost:3210
+    depends_on:
+      convex-backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - impfpass-network
+
+  # ── Admin key generation (one-shot) ───────────────────────────────────────
+  # Runs generate_admin_key.sh (bundled in the backend image) and writes the
+  # result to a shared secret volume. Uses the same image as convex-backend so
+  # the derivation is identical. Exits immediately after writing the key.
+  convex-keygen:
+    image: ghcr.io/get-convex/convex-backend:latest
+    container_name: impfpass-convex-keygen
+    environment:
+      INSTANCE_NAME: ${INSTANCE_NAME:-impfpass}
+      INSTANCE_SECRET: ${INSTANCE_SECRET:?INSTANCE_SECRET must be set in .env}
+    entrypoint: ["/usr/bin/bash", "/generate-admin-key.sh"]
+    volumes:
+      - convex_secrets:/secrets
+      - ./scripts/generate-admin-key.sh:/generate-admin-key.sh:ro
+    depends_on:
+      convex-backend:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - impfpass-network
+
+  # ── Function deployment (one-shot) ────────────────────────────────────────
+  # Runs on every `docker compose up`. Deploys the TypeScript functions from
+  # impfpass-app/frontend-next/convex/ and sets EXTRACTOR_BASE_URL so that
+  # the processUploadedImage action can reach data-acquisition inside Docker.
+  convex-functions:
+    image: node:20-alpine
+    container_name: impfpass-convex-deploy
+    working_dir: /app
+    volumes:
+      - ./impfpass-app/frontend-next:/app
+      - convex_fn_modules:/app/node_modules
+      - convex_secrets:/secrets
+      - ./scripts/deploy-convex-functions.sh:/deploy.sh:ro
+    environment:
+      CONVEX_SELF_HOSTED_URL: http://convex-backend:3210
+    command: sh /deploy.sh
+    depends_on:
+      convex-keygen:
+        condition: service_completed_successfully
+      convex-backend:
+        condition: service_healthy
+    restart: "no"
+    networks:
+      - impfpass-network
+
+  # ── Data acquisition service ──────────────────────────────────────────────
+  # FastAPI + llama.cpp client. Calls the external LLM at LLAMA_CPP_BASE_URL
+  # for image text extraction. Reached by Convex actions via Docker DNS.
   data-acquisition:
     build:
       context: ./data_acquisition
@@ -9,8 +104,6 @@ services:
       - "8000:8000"
     environment:
       LLAMA_CPP_BASE_URL: ${LLAMA_CPP_BASE_URL:-http://rcbe-srv-012.hs-regensburg.de:49068}
-      GEMMA_API_KEY: ${GEMMA_API_KEY:-}
-      GEMMA_API_BASE: ${GEMMA_API_BASE:-}
     volumes:
       - ./data_acquisition/vaccines.json:/app/vaccines.json:ro
       - extraction_db:/app/.whoosh_vaccinations
@@ -18,7 +111,12 @@ services:
     networks:
       - impfpass-network
 
-  # Next.js Frontend Service
+  # ── Next.js frontend ──────────────────────────────────────────────────────
+  # All Convex calls are browser-side ("use client" throughout), so
+  # NEXT_PUBLIC_CONVEX_URL must be resolvable from the user's browser —
+  # localhost:3210 is correct because that port is exposed on the host.
+  # Do NOT use host.docker.internal here: the browser cannot resolve it,
+  # which causes CORS errors on Convex storage upload URLs.
   frontend:
     build:
       context: ./impfpass-app/frontend-next
@@ -28,11 +126,6 @@ services:
     ports:
       - "3000:3000"
     environment:
-      # Convex local dev runs on the HOST at port 3210. All Convex calls are
-      # browser-side (every component is "use client"), so the browser reaches
-      # localhost:3210 directly — no container-to-host routing needed here.
-      # Do NOT use host.docker.internal here: the browser cannot resolve that
-      # hostname, which causes CORS/connection errors on the upload storage URLs.
       NEXT_PUBLIC_CONVEX_URL: http://localhost:3210
       NEXT_PUBLIC_CONVEX_SITE_URL: http://localhost:3211
     extra_hosts:
@@ -42,13 +135,18 @@ services:
       - /app/node_modules
       - /app/.next
     command: sh -c "npm ci && npm run dev -- --hostname 0.0.0.0"
+    depends_on:
+      convex-backend:
+        condition: service_healthy
     restart: unless-stopped
     networks:
       - impfpass-network
 
 volumes:
-  convex_node_modules:
-  extraction_db:
+  convex_data:        # Convex backend SQLite database and file storage
+  convex_secrets:     # Shared admin key between keygen and deploy containers
+  convex_fn_modules:  # node_modules for the function deployment container
+  extraction_db:      # Whoosh search index for data-acquisition
 
 networks:
   impfpass-network:

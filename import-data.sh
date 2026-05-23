@@ -1,37 +1,28 @@
 #!/bin/bash
 
 # Import Mock Data Script
-# Imports sample patients and vaccines into Convex
+# Imports sample patients and vaccines into the self-hosted Convex backend.
+# Requires the stack to be running (docker compose up -d).
 
-echo "📥 Importing Mock Data"
-echo "====================="
-echo ""
+set -e
 
-# Check if Convex is running
-if ! nc -z 127.0.0.1 3210 2>/dev/null; then
-    echo "❌ Convex backend is not running on port 3210"
-    echo ""
-    echo "Please start Convex first:"
-    echo "  npm run convex-dev"
-    echo ""
+echo "Importing mock data into Convex..."
+
+# Ensure convex-keygen has run so the admin key is available in the shared volume.
+if ! docker compose ps convex-backend 2>/dev/null | grep -q "healthy"; then
+    echo "Error: convex-backend is not healthy. Run 'docker compose up -d' first."
     exit 1
 fi
 
-# Check if docker compose services are running
-if ! docker compose ps frontend 2>/dev/null | grep -q "Up"; then
-    echo "ℹ Frontend container not running, attempting to start..."
-    docker compose up frontend -d
-    sleep 5
-fi
-
-echo "🔄 Importing patients and vaccines..."
-echo ""
-
-# Import via docker compose
-docker compose exec -T frontend npm run import
-
-echo ""
-echo "✅ Import complete!"
-echo ""
-echo "You can now access the application at:"
-echo "  🌐 http://localhost:3000"
+docker compose run --rm \
+  -e CONVEX_SELF_HOSTED_URL=http://convex-backend:3210 \
+  convex-functions \
+  sh -c '
+    npm ci --silent &&
+    export CONVEX_SELF_HOSTED_ADMIN_KEY=$(cat /secrets/admin_key) &&
+    echo "Importing patients..." &&
+    npx convex import --table patients samplePatients.jsonl --yes &&
+    echo "Importing vaccines..." &&
+    npx convex import --table vaccines vaccinations.jsonl --yes &&
+    echo "Import complete."
+  '

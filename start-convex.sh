@@ -1,31 +1,15 @@
 #!/bin/bash
 
-# Convex Backend Startup Script
-# Starts only the Convex backend on the host
+# ⚠  DEPRECATED — no longer needed.
+#
+# Convex now runs inside Docker Compose as the `convex-backend` service.
+# Use `docker compose up` or `./start.sh` to start the full stack.
+#
+# This script is kept for reference only. Running it would start a host-based
+# Convex dev process that conflicts with the containerised backend.
 
-cd "$(dirname "$0")/impfpass-app/frontend-next" || exit 1
-
-echo "🚀 Starting Convex Backend"
-echo "=========================="
+echo "This script is no longer needed."
+echo "The Convex backend runs in Docker Compose."
 echo ""
-
-# Check if node_modules exists
-if [ ! -d "node_modules" ]; then
-    echo "📦 Installing dependencies..."
-    npm install
-    echo ""
-fi
-
-echo "📌 IMPORTANT: Keep this terminal open while developing!"
-echo ""
-echo "Convex will be available at:"
-echo "  API:       http://localhost:3210"
-echo "  Dashboard: http://localhost:3211"
-echo ""
-echo "To stop Convex, press Ctrl+C"
-echo ""
-
-# Data acquisition service (running in Docker) is reachable at localhost:8000 on the host.
-export EXTRACTOR_BASE_URL=http://localhost:8000
-
-npm run convex-dev
+echo "Start everything with:  ./start.sh"
+echo "  or:                   docker compose up -d"
