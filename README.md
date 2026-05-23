@@ -486,13 +486,6 @@ Paper booklets use at least five distinct date formats: `19. JAN. 2007`, `21.3.2
 
 ---
 
-## Contributors
-
-| Name | Role |
-|---|---|
-| Philipp Rosanka | Full-stack development, AI integration, design |
-
----
 
 ## License
 
