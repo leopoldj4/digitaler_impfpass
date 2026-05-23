@@ -284,21 +284,6 @@ Navigate: Home → Upload (camera / gallery) → Overview (grouped by disease, b
 
 ---
 
-## Screenshots / Demo
-
-> Replace placeholders with actual screenshots once available.
-
-| Screen | Path |
-|---|---|
-| Practice dashboard | `docs/screenshots/dashboard.png` |
-| Upload pipeline (animated stages) | `docs/screenshots/upload-flow.png` |
-| AI review (side-by-side) | `docs/screenshots/review.png` |
-| Digital signature flow | `docs/screenshots/signature.png` |
-| Vaccination passport + QR | `docs/screenshots/impfpass.png` |
-| Mobile app home | `docs/screenshots/mobile-home.png` |
-| Google Wallet card | `docs/screenshots/mobile-wallet.png` |
-
----
 
 ## API Documentation
 
