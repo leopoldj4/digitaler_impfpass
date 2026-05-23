@@ -5,6 +5,7 @@ import Upload from './pages/Upload'
 import Overview from './pages/Overview'
 import Share from './pages/Share'
 import Termin from './pages/Termin'
+import Wallet from './pages/Wallet'
 
 export default function App() {
   return (
@@ -15,6 +16,7 @@ export default function App() {
         <Route path="/overview" element={<Overview />} />
         <Route path="/share" element={<Share />} />
         <Route path="/termin" element={<Termin />} />
+        <Route path="/wallet" element={<Wallet />} />
       </Routes>
     </MobileFrame>
   )

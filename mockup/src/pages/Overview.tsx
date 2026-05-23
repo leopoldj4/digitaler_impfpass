@@ -52,7 +52,7 @@ const vaccines: VaccineGroup[] = [
       { date: '14.04.2021', product: 'FSME-Immun 0,5 ml', manufacturer: 'Pfizer/Baxter', lot: 'N4O5P6', by: 'Dr. Müller' },
       { date: '20.04.2022', product: 'FSME-Immun 0,5 ml', manufacturer: 'Pfizer/Baxter', lot: 'Q7R8S9', by: 'Dr. Müller' },
     ],
-    nextDue: 'Jul 2025',
+    nextDue: 'Jul 2026',
     note: 'Auffrischung empfohlen',
   },
   {
@@ -94,7 +94,7 @@ const statusConfig: Record<VaccineStatus, { label: string; dot: string; badge: s
 }
 
 function VaccineCard({ group }: { group: VaccineGroup }) {
-  const [open, setOpen] = useState(group.id === 'covid')
+  const [open, setOpen] = useState(false)
   const cfg = statusConfig[group.status]
   const Icon = cfg.icon
 
@@ -190,7 +190,7 @@ export default function Overview() {
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-3 gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-2 mb-3">
         <div className="card rounded-2xl p-3 flex flex-col items-center gap-1">
           <span className="text-2xl font-bold text-slate-900">12</span>
           <span className="text-slate-500 text-[10px] text-center">gesamt</span>
@@ -213,7 +213,7 @@ export default function Overview() {
             <div>
               <p className="text-amber-800 font-semibold text-sm">FSME-Auffrischung empfohlen</p>
               <p className="text-amber-700 text-xs mt-0.5">
-                Ihr FSME-Schutz läuft im Juli 2025 aus. Jetzt Termin vereinbaren.
+                Ihr FSME-Schutz läuft im Juli 2026 aus. Jetzt Termin vereinbaren.
               </p>
             </div>
           </div>
