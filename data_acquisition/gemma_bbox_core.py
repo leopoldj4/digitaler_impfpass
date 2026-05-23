@@ -488,6 +488,7 @@ def _full_score(query: str, rec: dict[str, Any], detected_diseases: list[str]) -
     disease = _disease_f1(rec.get("diseases_list", []), detected_diseases) * _DISEASE_SCORE_WEIGHT
     return name_brand + bonus + disease
 
+MIN_FUZZY_NAME_SCORE = 0
 
 def _fuzzy_search(
     records: list[dict[str, str]],
