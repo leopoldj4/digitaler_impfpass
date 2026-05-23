@@ -26,6 +26,7 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
   const [step, setStep] = useState<Step>("review");
   const [consent, setConsent] = useState(false);
   const [signing, setSigning] = useState(false);
+  const [signedCount, setSignedCount] = useState(0);
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient", patientId],
@@ -36,6 +37,7 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
 
   const handleSign = async () => {
     setSigning(true);
+    const countToSign = unverified.length;
     try {
       const vaccinationIds = unverified.map((v) => v.id);
       const response = await signVaccinations(vaccinationIds);
@@ -64,6 +66,7 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
           ),
         };
       });
+      setSignedCount(response.signed_count ?? countToSign);
       setStep("success");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Signatur fehlgeschlagen");
@@ -163,7 +166,7 @@ export default function SignaturePage({ params }: { params: Promise<{ patientId:
                 </motion.div>
                 <div className="space-y-1">
                   <p className="text-lg font-bold text-emerald-800 dark:text-emerald-300">Erfolgreich signiert</p>
-                  <p className="text-sm text-emerald-700 dark:text-emerald-400">{unverified.length} Impfung{unverified.length !== 1 ? "en" : ""} signiert.</p>
+                  <p className="text-sm text-emerald-700 dark:text-emerald-400">{signedCount} Impfung{signedCount !== 1 ? "en" : ""} signiert.</p>
                 </div>
                 <div className="flex gap-2 w-full">
                   <Button variant="outline" className="flex-1" asChild><Link href={`/patients/${patientId}`}>Zum Profil</Link></Button>

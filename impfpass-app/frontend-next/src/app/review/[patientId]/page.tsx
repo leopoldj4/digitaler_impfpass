@@ -1,14 +1,14 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { AlertCircle, CheckCircle2, ArrowLeft, Save } from "lucide-react";
+import { AlertCircle, CheckCircle2, ArrowLeft, Save, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { DocumentViewer } from "@/components/review/document-viewer";
-import { VaccinationEntry } from "@/components/review/vaccination-entry";
+import { VaccinationEntry, type VaccinationEntryRef } from "@/components/review/vaccination-entry";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +27,9 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
   const queryClient = useQueryClient();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [allSaving, setAllSaving] = useState(false);
+
+  const entryRefs = useRef<Map<string, VaccinationEntryRef>>(new Map());
 
   const { data: patient, isLoading } = useQuery({
     queryKey: ["patient", patientId],
@@ -37,6 +40,26 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
     await updateVaccination(id, data, DOCTOR);
     await queryClient.invalidateQueries({ queryKey: ["patient", patientId] });
     toast.success("Impfung gespeichert");
+  };
+
+  const handleSetAllReviewed = () => {
+    for (const ref of entryRefs.current.values()) {
+      ref.setNeedsReview(false);
+    }
+  };
+
+  const handleSaveAll = async () => {
+    setAllSaving(true);
+    try {
+      await Promise.all(
+        Array.from(entryRefs.current.values()).map((ref) => ref.submit())
+      );
+      toast.success("Alle Impfungen gespeichert");
+    } catch {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setAllSaving(false);
+    }
   };
 
   const handleConfirmAll = async () => {
@@ -113,11 +136,39 @@ export default function ReviewPage({ params }: { params: Promise<{ patientId: st
               {isLoading ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full rounded-xl" />)
                 : patient?.vaccinations.map((v, i) => (
                   <motion.div key={v.id} className="min-w-0" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }}>
-                    <VaccinationEntry vaccination={v} index={i} onSave={handleSave} />
+                    <VaccinationEntry
+                      ref={(el) => {
+                        if (el) entryRefs.current.set(v.id, el);
+                        else entryRefs.current.delete(v.id);
+                      }}
+                      vaccination={v}
+                      index={i}
+                      onSave={handleSave}
+                    />
                   </motion.div>
                 ))}
             </div>
           </ScrollArea>
+
+          {!isLoading && patient && patient.vaccinations.length > 0 && (
+            <div className="flex shrink-0 gap-2 border-t bg-background p-4">
+              <Button
+                variant="outline"
+                className="flex-1 text-sm"
+                onClick={handleSetAllReviewed}
+              >
+                Alle Prüfungen erfolgt
+              </Button>
+              <Button
+                className="flex-1 gap-2 text-sm"
+                disabled={allSaving}
+                onClick={handleSaveAll}
+              >
+                {allSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Alle Speichern
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
