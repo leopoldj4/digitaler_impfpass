@@ -465,7 +465,6 @@ Paper booklets use at least five distinct date formats: `19. JAN. 2007`, `21.3.2
 - **Extractor streaming:** Stream partial VLM results to the frontend to reduce perceived latency on multi-page documents.
 - **Confidence threshold routing:** Automatically accept high-confidence entries without manual review; flag only ambiguous ones.
 - **eIDAS-compliant signatures:** Replace the mock signature hash with a qualified electronic signature via a registered trust service provider.
-- **Apple Wallet support:** Generate `PKPass` alongside the Google Wallet card.
 - **Offline-first patient app:** Cache vaccination records with a service worker so the mobile app is fully functional without connectivity.
 - **Multi-tenant support:** Namespace patients and documents per practice with role-based access control.
 
