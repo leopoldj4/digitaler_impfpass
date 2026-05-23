@@ -155,7 +155,7 @@ async def _run(args: argparse.Namespace) -> int:
         ]}
 
     if "vaccinations" in step1_data:
-        draw_boxes(image_path, output_path, step1_data)
+        # draw_boxes(image_path, output_path, step1_data)
 
     step2_json_path.write_text(
         json.dumps(step2_data, indent=2, ensure_ascii=False),
