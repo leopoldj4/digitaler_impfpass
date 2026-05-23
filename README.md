@@ -1,8 +1,8 @@
+# VaxCheck — Digitaler Impfpass
 > A two-surface vaccination passport platform: a patient-facing mobile app for managing and sharing immunisation records, and a practice-facing web application for AI-assisted document extraction, clinical review, and digital signing.
 
 
 <img width="2784" height="1936" alt="Screenshot 2026-05-23 at 13-44-44 DigitalImpfpass — Praxissoftware" src="https://github.com/user-attachments/assets/74081309-734f-422f-942a-1991a62cb9b0" />
-# VaxCheck — Digitaler Impfpass
 
 ---
 
