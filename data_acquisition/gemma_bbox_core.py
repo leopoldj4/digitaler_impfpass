@@ -84,7 +84,7 @@ class Extractor:
                     "date": str(step1_item.get("date", "")),
                     "name": str(step1_item.get("name", "")),
                     "diseases": ensure_string_list(step1_item.get("diseases", [])),
-                    "bounding_box": validate_box_2d(step1_item.get("box_2d")),
+                    "bounding_box": [0,0,0,0], # validate_box_2d(step1_item.get("box_2d")),
                 }
             )
 
@@ -488,6 +488,7 @@ def _full_score(query: str, rec: dict[str, Any], detected_diseases: list[str]) -
     disease = _disease_f1(rec.get("diseases_list", []), detected_diseases) * _DISEASE_SCORE_WEIGHT
     return name_brand + bonus + disease
 
+MIN_FUZZY_NAME_SCORE = 0
 
 def _fuzzy_search(
     records: list[dict[str, str]],
@@ -554,19 +555,3 @@ def assign_from_guesses(
         vaccinations.append(entry)
 
     return {"vaccinations": vaccinations}
-
-
-
-def draw_boxes(image_path: Path, output_path: Path, step1_data: dict[str, Any]) -> None:
-    with Image.open(image_path).convert("RGB") as image:
-        width, height = image.size
-        draw = ImageDraw.Draw(image)
-
-        for i, item in enumerate(step1_data["vaccinations"], start=1):
-            box_2d = validate_box_2d(item.get("box_2d"))
-            x1, y1, x2, y2 = scale_box_to_image(box_2d, width, height)
-            draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
-            label = f"{i}: {item.get('name', '')}"
-            draw.text((x1 + 4, max(0, y1 - 14)), label, fill="red")
-
-        image.save(output_path)
