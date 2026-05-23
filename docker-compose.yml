@@ -1,0 +1,49 @@
+services:
+  # Data Acquisition Service (LLM-based text extraction from vaccine passport images)
+  data-acquisition:
+    build:
+      context: ./data_acquisition
+      dockerfile: Dockerfile
+    container_name: impfpass-data-acquisition
+    ports:
+      - "8000:8000"
+    environment:
+      LLAMA_CPP_BASE_URL: ${LLAMA_CPP_BASE_URL:-http://rcbe-srv-012.hs-regensburg.de:49068}
+      GEMMA_API_KEY: ${GEMMA_API_KEY:-}
+      GEMMA_API_BASE: ${GEMMA_API_BASE:-}
+    volumes:
+      - ./data_acquisition/vaccines.json:/app/vaccines.json:ro
+      - extraction_db:/app/.whoosh_vaccinations
+    restart: unless-stopped
+    networks:
+      - impfpass-network
+
+  # Next.js Frontend Service
+  frontend:
+    build:
+      context: ./impfpass-app/frontend-next
+      dockerfile: Dockerfile
+    container_name: impfpass-frontend
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_CONVEX_URL=http://localhost:3210
+      NEXT_PUBLIC_CONVEX_SITE_URL: http://localhost:3211
+      DATA_ACQUISITION_API: http://data-acquisition:8000
+    volumes:
+      - ./impfpass-app/frontend-next:/app
+      - /app/node_modules
+      - /app/.next
+    command: sh -c "npm ci && npm run dev -- --hostname 0.0.0.0"
+    restart: unless-stopped
+    networks:
+      - impfpass-network
+
+volumes:
+  convex_node_modules:
+  extraction_db:
+
+networks:
+  impfpass-network:
+    driver: bridge
