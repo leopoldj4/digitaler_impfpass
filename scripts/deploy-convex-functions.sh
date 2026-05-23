@@ -33,4 +33,13 @@ npx convex env set EXTRACTOR_BASE_URL http://data-acquisition:8000
 echo "Importing vaccine catalog (vaccinations.jsonl -> vaccines table) ..."
 npx convex import --table vaccines vaccinations.jsonl --replace --yes
 
+echo "Checking whether patients table is empty ..."
+EXISTING_PATIENTS=$(npx convex run patients:list '{"search":null}')
+if [ "$EXISTING_PATIENTS" = "[]" ]; then
+  echo "No patients found — importing sample patients ..."
+  npx convex import --table patients samplePatients.jsonl --yes
+else
+  echo "Patients already present — skipping sample import."
+fi
+
 echo "Convex functions deployed successfully."
